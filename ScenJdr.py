@@ -17,7 +17,7 @@ from threading import Thread # pour programmation parallèle
 
 log = False
 action = (0,0)
-tpspool = 3
+
 
 
 def printlog(monmsg):
