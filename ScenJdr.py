@@ -5,40 +5,70 @@ import sys
 import json
 import random  #gestion des aléas des dés
 import time
-
 import tkinter
 from tkinter import ttk
-
 import discord #module discord
-
 import asyncio #gestion d'évènenment asynchrone pour discord
 from threading import Thread # pour programmation parallèle
 
+#-------------------------------------------------------------
+# Variable "globale"
+#-------------------------------------------------------------
 
 log = False
 action = (0,0)
+tpspool = 3
 
 
+#-------------------------------------------------------------
+# fonction de suivi
+#-------------------------------------------------------------
 
 def printlog(monmsg):
     global log
     if log:
         print(monmsg)
 
+#--------------------------------------------------------------------------
+# gestion affichage tkinter
+#--------------------------------------------------------------------------
+dico_couleur={}
+dico_couleur["fond"] = "#222222"
+dico_couleur["police"] = "#F0F0F0"
 
+def miseenformelabel(obj):
+    global dico_couleur
+    obj.config(bg=dico_couleur["fond"], fg=dico_couleur["police"])
 
+def miseenformelabelinv(obj):
+    global dico_couleur
+    obj.config(bg=dico_couleur["police"], fg=dico_couleur["fond"])
 
+def miseenformetk(obj):
+    global dico_couleur
+    obj.config(bg=dico_couleur["fond"])
+
+#-------------------------------------------------------------
+# déclaration fenetre de préconfiguration et de lancement
+#-------------------------------------------------------------
+    
 class premiere_config(tkinter.Tk):
     def __init__(self, dico_conf):
-        super().__init__() 
+        super().__init__()
+        self.geometry("300x200")
+        miseenformetk(self)
+        self.title("Assistant de configuration")
         self.dico_conf = dico_conf
         r = c = 0
-        self.label1 = tkinter.Label(self,  text="Etape de configuration, Merci de renseigner les informations demandés ") #
-        self.label1.grid(column = c, row = r)
+        self.label1 = tkinter.Label(self, \
+            text="Etape de configuration, Merci de renseigner les informations demandés ") 
+        miseenformelabel(self.label1)
+        self.label1.grid(column = c, row = r, sticky="ew")
         
         r+=1
-        self.label2 = tkinter.Label(self,  text="Token du bot de l'appli à vérifier dans la secton developpeur:") #
-        self.label2.grid(column = c, row = r) 
+        self.label2 = tkinter.Label(self,  text="Token du bot de l'appli à vérifier dans la secton developpeur:")
+        miseenformelabel(self.label2)
+        self.label2.grid(column = c, row = r, sticky="ew") 
         
         r+=1
         self.CToken = tkinter.StringVar()
@@ -47,8 +77,9 @@ class premiere_config(tkinter.Tk):
         self.E_token.grid(column = c, row = r)
 
         r+=1
-        self.label3 = tkinter.Label(self,  text="Id du channel Discord ") #
-        self.label3.grid(column = c, row = r) 
+        self.label3 = tkinter.Label(self,  text="Id du channel Discord ")
+        miseenformelabel(self.label3)
+        self.label3.grid(column = c, row = r, sticky="ew") 
         
         r+=1
         self.CIdChan = tkinter.StringVar()
@@ -56,8 +87,55 @@ class premiere_config(tkinter.Tk):
         self.E_IdChan = tkinter.Entry(self, textvariable = self.CIdChan, width = 65)
         self.E_IdChan.grid(column = c, row = r)
 
+class choix_system(tkinter.Tk):
+    def __init__(self):
+        super().__init__()
+        self.geometry("300x200")
+        self.title("Choix crucial! ")
+        miseenformetk(self)
+        self.choix = 0
+        self.r=self.c=0
 
+        self.label1 = tkinter.Label(self,  text="Que voullez-vous faire ? ")
+        miseenformelabel(self.label1)
+        self.label1.grid(column = self.c, row = self.r, columnspan= 3, sticky="ew") 
+        
+        self.r+=1
 
+        self.vals = ['N', 'P']
+        self.etiqs = ['Nouvelle campagne', 'Poursuivre']
+        self.varGr = tkinter.StringVar()
+        self.varGr.set(self.vals[1])
+        self.liste_radio= []
+        for i in range(2):
+            self.liste_radio.append(tkinter.Radiobutton(self, indicatoron = 0, variable=self.varGr, text=self.etiqs[i], value=self.vals[i], command = self.cachecache,bg="#222222", fg="#7F7F7F"))
+            miseenformelabel(self.liste_radio[i])
+            self.liste_radio[i].grid( row = self.r, column = self.c+i , sticky = "ew")
+        self.r += 1
+        
+        self.rcombo = self.r
+        self.var1 = ("7seaV2","Dk2") 
+        self.var2 = tkinter.StringVar() #permet de récuperer la station selectionnée 
+        self.combo1 = ttk.Combobox(self, width=30, textvariable=self.var2,\
+                                   values=self.var1, state ='readonly') #combobox de présentation des system
+        self.combo1.grid(row=self.r, column = self.c, sticky="ew", columnspan=3)
+        self.combo1.grid_forget()
+
+    def cachecache(self):
+        if self.varGr.get() == 'N':
+            self.combo1.grid(column = self.c, row = self.rcombo)
+            miseenformelabelinv(self.liste_radio[0])
+            miseenformelabel(self.liste_radio[1])
+        else:
+            self.combo1.grid_forget()
+            miseenformelabelinv(self.liste_radio[1])
+            miseenformelabel(self.liste_radio[0])
+        self.update()
+
+        
+#-------------------------------------------------------------
+# On regarde où on est
+#-------------------------------------------------------------
 
 chemin = os.path.dirname(__file__)
 
@@ -79,6 +157,9 @@ try:
 
     
 except:
+    #-------------------------------------------------------------
+    # si pas de config alors on en créer un
+    #-------------------------------------------------------------
     token = "Your secret token here / ton token d'application secret ici"
     id_chan = "L'ID du canal ici "
     log = True
@@ -95,8 +176,8 @@ except:
     with open(cheminconfig, 'w') as source:
         json.dump(dico_conf,source, indent = 4)
     
-prems = premiere_config(dico_conf)
-prems.mainloop()
+    prems = premiere_config(dico_conf)
+    prems.mainloop()
 
 #-------------------------------------------------------------
 #test d'accès au fichier pj
@@ -106,6 +187,10 @@ prems.mainloop()
 chemin = os.path.dirname(__file__)
 fichier = 'source.json'
 cheminfichier = os.path.join(chemin,fichier)
+
+deuxfen = choix_system()
+deuxfen.mainloop()
+
 try:
     with open (cheminfichier, "r") as source:
         dico_pj = json.load(source)
@@ -113,6 +198,9 @@ try:
 
     
 except:
+    #-------------------------------------------------------------
+    # si pas de fichier source alors on en créer un bidon
+    #-------------------------------------------------------------
     dico_comp = {}
     dico_comp['escrime']= 1
     dico_comp['parade']= 1
@@ -129,6 +217,7 @@ except:
     pj1["comp"] = dico_comp
 
     dico_pj={}
+    dico_pj["system"] = "7seaV2"
     dico_pj["pj1"] = pj1
     dico_pj["pj2"] = pj1
 
@@ -137,13 +226,17 @@ except:
     with open(cheminfichier , 'w') as source:
         json.dump(dico_pj,source, indent = 4)
     
-
+#-------------------------------------------------------------
 # création du client discord
+#-------------------------------------------------------------
 client = discord.Client()
 
 justearrived = True # pour générer un message à la connexion
 affectation = {} #pour mémoriser qui à pris un pj
 j = 0
+#-------------------------------------------------------------
+# fonction outils pour bot discord
+#-------------------------------------------------------------
 
 #lance nb D10 si explose est valide, chaque 10 rajoute un D10 suplémentaire, (max 20) 
 #retourne les résultats sous forme de liste
@@ -203,6 +296,9 @@ def nbmise (liste_de, difficulte):
 
     return nb_de_mise, texte_mise
 
+#-------------------------------------------------------------
+# fonction asyncio de bot discord
+#-------------------------------------------------------------
 
 @client.event
 async def on_ready():
@@ -281,8 +377,10 @@ async def on_message(message):
         
         texte_li_pj = 'liste des Pj: \n'
         for key in dico_pj:
-            nompj = dico_pj[key]
-            texte_li_pj += key + ' : ' + nompj['nom'] + '\n'
+            if not key == "system":
+                nompj = dico_pj[key]
+                print(nompj)
+                texte_li_pj += key + ' : ' + nompj['nom'] + '\n'
 
         
         await message.channel.send(texte_li_pj)
@@ -323,22 +421,28 @@ async def my_background_task():
         
         await asyncio.sleep(tpspool) # task runs every 60 seconds
 
+        
+#-------------------------------------------------------------
+# gestion fenetre du meneur
+#-------------------------------------------------------------
 
 class mafen(tkinter.Tk):
     def __init__(self):
         super().__init__() 
-
+        miseenformetk(self)
         global dico_pj
         c=0
         r=0
 
         self.label1 = tkinter.Label(self,  text="Mon gestionnaire de campagne de la môôôôôôôrt !")
+        miseenformelabel(self.label1)
         self.label1.grid(column = c, row = r,columnspan = 5) 
 
         r +=1
         self.var1 = () 
         for key in dico_pj: 
-            self.var1 = self.var1 + (key,)
+            if not key == "system":
+                self.var1 = self.var1 + (key,)
         
         self.var2 = tkinter.StringVar() #permet de récuperer la station selectionnée 
         self.combo1 = ttk.Combobox(self, width=30, textvariable=self.var2,\
@@ -347,6 +451,7 @@ class mafen(tkinter.Tk):
         r+=1
 
         self.btbefore = tkinter.Button(self,text="test", width = 2, command=self.test)
+        miseenformelabel(self.btbefore)
         self.btbefore.grid(row=r,column = c)
 
     def test(self):
@@ -354,6 +459,11 @@ class mafen(tkinter.Tk):
         global action
         if action == (0,0):
             action = (1,'test')
+            
+            
+#-------------------------------------------------------------
+# création de class pour thread
+#-------------------------------------------------------------
 
 class class1(Thread):
 
