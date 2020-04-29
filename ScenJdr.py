@@ -5,8 +5,13 @@ import sys
 import json
 import random  #gestion des aléas des dés
 import time
+
+from functools import partial
+from PySide2 import QtWidgets, QtGui, QtCore
+
 import tkinter
 from tkinter import ttk
+
 import discord #module discord
 import asyncio #gestion d'évènenment asynchrone pour discord
 from threading import Thread # pour programmation parallèle
@@ -30,6 +35,65 @@ def printlog(monmsg):
         print(monmsg)
 
 #--------------------------------------------------------------------------
+mon_style = '''
+                            QWidget {
+                                background-color : #202020;
+                                color : #DFDFDF;
+                                border-color : #7F7F7F;
+                                }
+                            QPushButton {
+                                border-style: outset;
+                                border-width: 1px;
+                                border-radius: 10px; 
+                                border-color: #7F7F7F;
+                                font: bold 14px;
+                                min-width: 3em;
+                                padding: 6px;
+                                }
+                            QPushButton:pressed{
+                                background-color: #777777;
+                                color : black;
+                                border-style: inset;
+                                }
+                            QComboBox {
+                                color : #505050 ;
+                                border: 1px solid ;
+                                border-color: #7F7F7F; 
+                                border-radius: 3px;
+                                padding: 6px;
+                                min-width: 6em;
+                                }
+                            QComboBox:enabled{
+                                color : #DFDFDF ;
+                                border: 1px solid ;
+                                border-color: #7F7F7F; 
+                                border-radius: 3px;
+                                padding: 6px;
+                                min-width: 6em;
+                                }
+                            QProgressBar {
+                                background-color : #202020;
+                                color : #7F7F7F;
+                                border: 1px solid ;
+                                border-color: #7F7F7F; 
+                                border-radius: 3px;
+                                padding: 6px;
+                                }
+                            QLineEdit {                
+                                border: 1px solid ;
+                                border-color: #7F7F7F; 
+                                border-radius: 3px;
+                                }
+                            QCheckbox{
+                                border: 1px solid ;
+                                border-color: #7F7F7F; 
+                                border-radius: 3px;
+                                }'''
+
+app = QtWidgets.QApplication([])
+
+
+#--------------------------------------------------------------------------
 # gestion affichage tkinter
 #--------------------------------------------------------------------------
 dico_couleur={}
@@ -47,92 +111,101 @@ def miseenformelabelinv(obj):
 def miseenformetk(obj):
     global dico_couleur
     obj.config(bg=dico_couleur["fond"])
-
 #-------------------------------------------------------------
 # déclaration fenetre de préconfiguration et de lancement
 #-------------------------------------------------------------
-    
-class premiere_config(tkinter.Tk):
-    def __init__(self, dico_conf):
-        super().__init__()
-        self.geometry("300x200")
-        miseenformetk(self)
-        self.title("Assistant de configuration")
+  
+
+class premiere_config(QtWidgets.QWidget):
+    def __init__(self, dico_conf, mon_style):
+        
+        super(premiere_config, self).__init__()
+        
+        self.setStyleSheet(mon_style)     
+        self.resize(300,200)
+        self.setWindowTitle("Assistant de configuration")
+        
         self.dico_conf = dico_conf
         r = c = 0
-        self.label1 = tkinter.Label(self, \
-            text="Etape de configuration, Merci de renseigner les informations demandés ") 
-        miseenformelabel(self.label1)
-        self.label1.grid(column = c, row = r, sticky="ew")
         
-        r+=1
-        self.label2 = tkinter.Label(self,  text="Token du bot de l'appli à vérifier dans la secton developpeur:")
-        miseenformelabel(self.label2)
-        self.label2.grid(column = c, row = r, sticky="ew") 
-        
-        r+=1
-        self.CToken = tkinter.StringVar()
-        self.CToken.set(self.dico_conf["token"])
-        self.E_token = tkinter.Entry(self, textvariable = self.CToken, width = 65)
-        self.E_token.grid(column = c, row = r)
+        self.grille = QtWidgets.QGridLayout(self)#exist en Hlayout et Vlayout
 
-        r+=1
-        self.label3 = tkinter.Label(self,  text="Id du channel Discord ")
-        miseenformelabel(self.label3)
-        self.label3.grid(column = c, row = r, sticky="ew") 
         
+        self.lbl_1 = QtWidgets.QLabel('Etape de configuration, Merci de renseigner les informations demandés ',self)
+        self.grille.addWidget(self.lbl_1, r,c,1,1)
         r+=1
-        self.CIdChan = tkinter.StringVar()
-        self.CIdChan.set(self.dico_conf["id_chan"])
-        self.E_IdChan = tkinter.Entry(self, textvariable = self.CIdChan, width = 65)
-        self.E_IdChan.grid(column = c, row = r)
 
-class choix_system(tkinter.Tk):
-    def __init__(self):
-        super().__init__()
-        self.geometry("300x200")
-        self.title("Choix crucial! ")
-        miseenformetk(self)
+        self.lbl_2 = QtWidgets.QLabel("Token du bot de l'appli à vérifier dans la secton developpeur:")
+        self.grille.addWidget(self.lbl_2, r,c,1,1)           
+        r+=1
+        
+        self.le_token = QtWidgets.QLineEdit()
+        self.le_token.setText(self.dico_conf["token"])
+        self.grille.addWidget(self.le_token, r,c,1,1)           
+        r+=1
+
+        self.lbl_3 = QtWidgets.QLabel("Id du channel Discord:")
+        self.grille.addWidget(self.lbl_3, r,c,1,1)           
+        r+=1
+        
+        self.le_idchan = QtWidgets.QLineEdit()
+        self.le_idchan.setText(self.dico_conf["id_chan"])
+        self.grille.addWidget(self.le_idchan, r,c,1,1)           
+        r+=1
+
+        self.valid = False
+        self.btn_valid = QtWidgets.QPushButton('Ok',self)     
+        self.btn_valid.clicked.connect(self.clique)
+        self.grille.addWidget(self.btn_valid, r,c,1,1)           
+        r+=1
+
+        QtWidgets.QShortcut(QtGui.QKeySequence('Esc'), self, self.close)
+
+    def clique(self):
+        self.close()
+
+   
+
+class choix_system(QtWidgets.QWidget):
+    def __init__(self, mon_style):
+      
+        super(choix_system, self).__init__()
+        
+        self.setStyleSheet(mon_style)     
+        self.resize(300,50)
+        self.setWindowTitle("Choix crucial!")
         self.choix = 0
-        self.r=self.c=0
+        self.r = self.c = 0
 
-        self.label1 = tkinter.Label(self,  text="Que voullez-vous faire ? ")
-        miseenformelabel(self.label1)
-        self.label1.grid(column = self.c, row = self.r, columnspan= 3, sticky="ew") 
-        
-        self.r+=1
+        self.grille = QtWidgets.QGridLayout(self)#exist en Hlayout et Vlayout
 
-        self.vals = ['N', 'P']
-        self.etiqs = ['Nouvelle campagne', 'Poursuivre']
-        self.varGr = tkinter.StringVar()
-        self.varGr.set(self.vals[1])
-        self.liste_radio= []
-        for i in range(2):
-            self.liste_radio.append(tkinter.Radiobutton(self, indicatoron = 0, variable=self.varGr, text=self.etiqs[i], value=self.vals[i], command = self.cachecache,bg="#222222", fg="#7F7F7F"))
-            miseenformelabel(self.liste_radio[i])
-            self.liste_radio[i].grid( row = self.r, column = self.c+i , sticky = "ew")
+        self.lbl_1 = QtWidgets.QLabel('Que voullez-vous faire ? ',self)
+        self.grille.addWidget(self.lbl_1, self.r,self.c,1,2)
         self.r += 1
-        
-        self.rcombo = self.r
-        self.var1 = ("7seaV2","Dk2") 
-        self.var2 = tkinter.StringVar() #permet de récuperer la station selectionnée 
-        self.combo1 = ttk.Combobox(self, width=30, textvariable=self.var2,\
-                                   values=self.var1, state ='readonly') #combobox de présentation des system
-        self.combo1.grid(row=self.r, column = self.c, sticky="ew", columnspan=3)
-        self.combo1.grid_forget()
 
-    def cachecache(self):
-        if self.varGr.get() == 'N':
-            self.combo1.grid(column = self.c, row = self.rcombo)
-            miseenformelabelinv(self.liste_radio[0])
-            miseenformelabel(self.liste_radio[1])
-        else:
-            self.combo1.grid_forget()
-            miseenformelabelinv(self.liste_radio[1])
-            miseenformelabel(self.liste_radio[0])
-        self.update()
+        self.rad_new = QtWidgets.QRadioButton('Nouvelle campagne', self)
+        self.rad_new.toggled.connect(self.bascul)
+        self.grille.addWidget(self.rad_new, self.r,self.c,1,1)
+        self.rad_old = QtWidgets.QRadioButton('Poursuivre', self)
+        self.rad_old.setChecked(True)
+        self.grille.addWidget(self.rad_old, self.r,self.c+1,1,1)
+        self.r += 1
 
-        
+        self.cmb_1 = QtWidgets.QComboBox()
+        self.cmb_1.addItems(['7seaV2','DK²'])
+        self.cmb_1.setCurrentIndex(0)
+        self.cmb_1.setEnabled(False)
+        #self.cmb_1.setVisible(False)
+        self.grille.addWidget(self.cmb_1, self.r,self.c,1,2)
+        self.r += 1
+
+    def bascul(self):
+        recup = self.sender()
+        self.cmb_1.setEnabled(recup.isChecked())
+  
+       
+    
+
 #-------------------------------------------------------------
 # On regarde où on est
 #-------------------------------------------------------------
@@ -176,8 +249,10 @@ except:
     with open(cheminconfig, 'w') as source:
         json.dump(dico_conf,source, indent = 4)
     
-    prems = premiere_config(dico_conf)
-    prems.mainloop()
+    fenetre = premiere_config(dico_conf,mon_style)
+    fenetre.show()
+    app.exec_()
+
 
 #-------------------------------------------------------------
 #test d'accès au fichier pj
@@ -188,8 +263,10 @@ chemin = os.path.dirname(__file__)
 fichier = 'source.json'
 cheminfichier = os.path.join(chemin,fichier)
 
-deuxfen = choix_system()
-deuxfen.mainloop()
+
+fenetre = choix_system(mon_style)
+fenetre.show()
+app.exec_()
 
 try:
     with open (cheminfichier, "r") as source:
@@ -332,7 +409,11 @@ async def on_message(message):
         - $n pour un jet normal (sans relance des 10)
         - $nd pour un jet normal (sans relance des 10) avec des groupes de 15 pour 1 mise
         - $ne pour un jet explosif (avec 1D en plus pour chaque 10)
-        - $ned pour un jet explosif (avec 1D en plus pour chaque 10) avec des groupes de 15 pour 1 mise''')
+        - $ned pour un jet explosif (avec 1D en plus pour chaque 10) avec des groupes de 15 pour 1 mise
+        Pour agir avec les PJ:
+        - $pj pour voir la liste des pj
+        - $give pj1 recevoir un pj
+        ''')
         
     elif message.content.startswith('$n'):
         
@@ -374,17 +455,25 @@ async def on_message(message):
             await message.channel.send('pas compris !')
 
     elif message.content.startswith('$pj'):
-        
-        texte_li_pj = 'liste des Pj: \n'
-        for key in dico_pj:
-            if not key == "system":
-                nompj = dico_pj[key]
-                print(nompj)
-                texte_li_pj += key + ' : ' + nompj['nom'] + '\n'
+        requete = message.content
+        if requete == '$pj':
+                    
+            texte_li_pj = 'liste des Pj: \n'
+            for key in dico_pj:
+                if not key == "system":
+                    nompj = dico_pj[key]
+                    print(nompj)
+                    texte_li_pj += key + ' : ' + nompj['nom'] + '\n'
+            await message.channel.send(texte_li_pj)
 
+        elif len(requete) > 3 :
+            num_pj = requete[3:len(requete)]
+            
+            monmessage = str(dico_pj['pj'+num_pj])
+            await message.channel.send(monmessage)
+        else:
+            await message.channel.send('''$pj d'accord mais $pj combien  ?''' )
         
-        await message.channel.send(texte_li_pj)
-
 
 @client.event
 async def my_background_task():
@@ -396,15 +485,21 @@ async def my_background_task():
     global dico_conf
     print(id_chan)
     channel = client.get_channel(int(id_chan))
-    await asyncio.sleep(tpspool) # task runs every 60 seconds
+    await asyncio.sleep(tpspool) #
 
+    liste_blague = ['''Staying alive, staying a live. Ah, ah ah....''',\
+                    '''Inserez une blageu ici''',\
+                    '''Pour ce que j'en dit il faudrais mieux que je me taise''']
+
+    liste_intro=['''Je viens d'arriver, je ne vous ai pas manqué ?''',\
+            '''Poypoy ! Pour rappel on me parle avec des $ ''',\
+            '''Faites $help pour apprendre à me parler''',\
+            '''Eh Lanceur est arrivééé, sans se préceeeeerrrr...''']
     if justearrived :
-        monmessage = '''Je viens d'arriver, je ne vous ai pas manqué ?'''
-        await channel.send(monmessage)
-        monmessage = '''Pour rappel on me parle avec des $ et pour savoir si je suis pret '''
-        await channel.send(monmessage)
-        monmessage = '''faites $hello, sinon $help pour apprendre à me parler'''
-        await channel.send(monmessage)
+
+       
+        random.shuffle(liste_intro)
+        await channel.send(liste_intro[0])
         justearrived = False
 
     count = 0
@@ -417,6 +512,11 @@ async def my_background_task():
             monmessage = str(corps)
             await channel.send(monmessage)
             action = (0,0)
+        if count % int(600/tpspool) == 0:
+            
+            random.shuffle(liste_blague)
+            await channel.send(liste_blague[0])
+             
         
         
         await asyncio.sleep(tpspool) # task runs every 60 seconds
@@ -426,33 +526,41 @@ async def my_background_task():
 # gestion fenetre du meneur
 #-------------------------------------------------------------
 
-class mafen(tkinter.Tk):
-    def __init__(self):
-        super().__init__() 
-        miseenformetk(self)
+class mafen(QtWidgets.QWidget):
+    def __init__(self,mon_style):
+        super(mafen, self).__init__()
+        self.resize(300,150)
+        self.setWindowTitle('Enjoy your campagne')
+
+
         global dico_pj
-        c=0
-        r=0
 
-        self.label1 = tkinter.Label(self,  text="Mon gestionnaire de campagne de la môôôôôôôrt !")
-        miseenformelabel(self.label1)
-        self.label1.grid(column = c, row = r,columnspan = 5) 
+        r=c=0
+        
+        
+        self.grille = QtWidgets.QGridLayout(self)#exist en Hlayout et Vlayout
 
-        r +=1
-        self.var1 = () 
+
+        
+        self.lbl_1 = QtWidgets.QLabel("Mon gestionnaire de campagne de la môôôôôôôrt !",self)
+        self.grille.addWidget(self.lbl_1, r,c,1,5)
+        r += 1
+
+        self.cmb_1 = QtWidgets.QComboBox()
         for key in dico_pj: 
             if not key == "system":
-                self.var1 = self.var1 + (key,)
-        
-        self.var2 = tkinter.StringVar() #permet de récuperer la station selectionnée 
-        self.combo1 = ttk.Combobox(self, width=30, textvariable=self.var2,\
-                                   values=self.var1, state ='readonly') #combobox de présentation des pj
-        self.combo1.grid(column = 0, row = 1)
+                print(str(key))
+                self.cmb_1.addItem(str(key))
+        self.cmb_1.setCurrentIndex(0)
+        self.grille.addWidget(self.cmb_1, r,c,1,2)
         r+=1
 
-        self.btbefore = tkinter.Button(self,text="test", width = 2, command=self.test)
-        miseenformelabel(self.btbefore)
-        self.btbefore.grid(row=r,column = c)
+
+        self.btn_test = QtWidgets.QPushButton('test',self ) #Flat = True     
+        self.btn_test.clicked.connect(self.test)
+        self.grille.addWidget(self.btn_test, r,c,1,2)
+        r+=1
+        
 
     def test(self):
         #my_background_task()
@@ -480,17 +588,21 @@ class class1(Thread):
         
 class class2(Thread):
     
-    def __init__(self):
+    def __init__(self,mon_style,app):
         Thread.__init__(self)
-        
+        self.app = app
+        self.mon_style = mon_style
     def run(self):
         """Code à exécuter pendant l'exécution du thread."""
-        self.fen = mafen()
-        self.fen.mainloop()
+        
+        self.fen = mafen(self.mon_style)
+        self.fen.show()
+        self.app.exec_()
 
+        
 # Création des threads
 thread_1 = class1()
-thread_2 = class2()
+thread_2 = class2(mon_style,app)
 
 # Lancement des threads
 thread_1.start()
@@ -499,3 +611,4 @@ thread_2.start()
 # Attend que les threads se terminent
 thread_1.join()
 thread_2.join()
+print('end of line')
