@@ -9,9 +9,6 @@ import time
 from functools import partial
 from PySide2 import QtWidgets, QtGui, QtCore
 
-import tkinter
-from tkinter import ttk
-
 import discord #module discord
 import asyncio #gestion d'évènenment asynchrone pour discord
 from threading import Thread # pour programmation parallèle
@@ -92,25 +89,6 @@ mon_style = '''
 
 app = QtWidgets.QApplication([])
 
-
-#--------------------------------------------------------------------------
-# gestion affichage tkinter
-#--------------------------------------------------------------------------
-dico_couleur={}
-dico_couleur["fond"] = "#222222"
-dico_couleur["police"] = "#F0F0F0"
-
-def miseenformelabel(obj):
-    global dico_couleur
-    obj.config(bg=dico_couleur["fond"], fg=dico_couleur["police"])
-
-def miseenformelabelinv(obj):
-    global dico_couleur
-    obj.config(bg=dico_couleur["police"], fg=dico_couleur["fond"])
-
-def miseenformetk(obj):
-    global dico_couleur
-    obj.config(bg=dico_couleur["fond"])
 #-------------------------------------------------------------
 # déclaration fenetre de préconfiguration et de lancement
 #-------------------------------------------------------------
@@ -163,8 +141,7 @@ class premiere_config(QtWidgets.QWidget):
 
     def clique(self):
         self.close()
-
-   
+  
 
 class choix_system(QtWidgets.QWidget):
     def __init__(self, mon_style):
@@ -203,7 +180,50 @@ class choix_system(QtWidgets.QWidget):
         recup = self.sender()
         self.cmb_1.setEnabled(recup.isChecked())
   
-       
+
+class mafen(QtWidgets.QWidget):
+    def __init__(self,mon_style):
+        super(mafen, self).__init__()
+        self.resize(300,150)
+        self.setWindowTitle('Enjoy your campagne')
+        self.setStyleSheet(mon_style)  
+
+        global dico_pj
+
+        r=c=0
+        
+        
+        self.grille = QtWidgets.QGridLayout(self)#exist en Hlayout et Vlayout
+
+
+        
+        self.lbl_1 = QtWidgets.QLabel("Mon gestionnaire de campagne de la môôôôôôôrt !",self)
+        self.grille.addWidget(self.lbl_1, r,c,1,5)
+        r += 1
+
+        self.cmb_1 = QtWidgets.QComboBox()
+        for key in dico_pj: 
+            if not key == "system":
+                print(str(key))
+                self.cmb_1.addItem(str(key))
+        self.cmb_1.setCurrentIndex(0)
+        self.grille.addWidget(self.cmb_1, r,c,1,2)
+        r+=1
+
+
+        self.btn_test = QtWidgets.QPushButton('test',self ) #Flat = True     
+        self.btn_test.clicked.connect(self.test)
+        self.grille.addWidget(self.btn_test, r,c,1,2)
+        r+=1
+        
+
+    def test(self):
+        #my_background_task()
+        global action
+        if action == (0,0):
+            action = (1,'test')
+            
+        
     
 
 #-------------------------------------------------------------
@@ -520,54 +540,7 @@ async def my_background_task():
         
         
         await asyncio.sleep(tpspool) # task runs every 60 seconds
-
-        
-#-------------------------------------------------------------
-# gestion fenetre du meneur
-#-------------------------------------------------------------
-
-class mafen(QtWidgets.QWidget):
-    def __init__(self,mon_style):
-        super(mafen, self).__init__()
-        self.resize(300,150)
-        self.setWindowTitle('Enjoy your campagne')
-
-
-        global dico_pj
-
-        r=c=0
-        
-        
-        self.grille = QtWidgets.QGridLayout(self)#exist en Hlayout et Vlayout
-
-
-        
-        self.lbl_1 = QtWidgets.QLabel("Mon gestionnaire de campagne de la môôôôôôôrt !",self)
-        self.grille.addWidget(self.lbl_1, r,c,1,5)
-        r += 1
-
-        self.cmb_1 = QtWidgets.QComboBox()
-        for key in dico_pj: 
-            if not key == "system":
-                print(str(key))
-                self.cmb_1.addItem(str(key))
-        self.cmb_1.setCurrentIndex(0)
-        self.grille.addWidget(self.cmb_1, r,c,1,2)
-        r+=1
-
-
-        self.btn_test = QtWidgets.QPushButton('test',self ) #Flat = True     
-        self.btn_test.clicked.connect(self.test)
-        self.grille.addWidget(self.btn_test, r,c,1,2)
-        r+=1
-        
-
-    def test(self):
-        #my_background_task()
-        global action
-        if action == (0,0):
-            action = (1,'test')
-            
+      
             
 #-------------------------------------------------------------
 # création de class pour thread
@@ -584,31 +557,23 @@ class class1(Thread):
         client.loop.create_task(my_background_task())
         global dico_conf
         codesecret = dico_conf['token']
+        print('007')
         client.run(codesecret)
-        
-class class2(Thread):
-    
-    def __init__(self,mon_style,app):
-        Thread.__init__(self)
-        self.app = app
-        self.mon_style = mon_style
-    def run(self):
-        """Code à exécuter pendant l'exécution du thread."""
-        
-        self.fen = mafen(self.mon_style)
-        self.fen.show()
-        self.app.exec_()
 
-        
+
 # Création des threads
 thread_1 = class1()
-thread_2 = class2(mon_style,app)
+
 
 # Lancement des threads
 thread_1.start()
-thread_2.start()
 
+
+
+fen = mafen(mon_style)
+fen.show()
+app.exec_()
 # Attend que les threads se terminent
 thread_1.join()
-thread_2.join()
+
 print('end of line')
