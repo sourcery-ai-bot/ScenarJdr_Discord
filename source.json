@@ -1,0 +1,37 @@
+{
+    "system": "7seaV2",
+    "pj1": {
+        "nom": "Don Noob",
+        "info": {
+            "nation": "Castille"
+            },
+        "carac": {
+            "Puissance": 1,
+            "Finesse": 1,
+            "Esprit": 1,
+            "Determination": 1,
+            "Panache": 1
+        },
+        "comp": {
+            "escrime": 3,
+            "parade": 3
+        }
+    },
+    "pj2": {
+        "nom": " De Noob",
+        "info": {
+            "nation": "Montaigne"
+            },
+        "carac": {
+            "Puissance": 1,
+            "Finesse": 1,
+            "Esprit": 1,
+            "Determination": 1,
+            "Panache": 1
+        },
+        "comp": {
+            "escrime": 3,
+            "parade": 3
+        }
+    }
+}
