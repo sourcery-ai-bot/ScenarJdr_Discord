@@ -1,0 +1,6 @@
+{
+    "token" : "your token number",
+    "id_chan" : "your channel ID",
+    "log" : true   ,
+    "tps_pool" : 3
+}
