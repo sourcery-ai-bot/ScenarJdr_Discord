@@ -18,8 +18,8 @@ Rôle de l'interface:
 
 Rôle du Bot:
 - Lancé de Dé en fonction du système de regles choisis
-- visualisation de fiche et permet lancé un dé en fonction de la FDP
-- diffuser la musique choisis par le mener
+- Visualisation de fiche et permet de lancer un dé en fonction de la FDP
+- Diffuser la musique choisis par le mener
 
 --------------------------------------------------------------------------
 
