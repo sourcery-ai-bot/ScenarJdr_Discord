@@ -33,6 +33,11 @@ def printlog(monmsg):
 
 #--------------------------------------------------------------------------
 mon_style = '''
+                            QMainWindow {
+                                background-color : #202020;
+                                color : #DFDFDF;
+                                border-color : #7F7F7F;
+                                }
                             QWidget {
                                 background-color : #202020;
                                 color : #DFDFDF;
@@ -41,10 +46,10 @@ mon_style = '''
                             QPushButton {
                                 border-style: outset;
                                 border-width: 1px;
-                                border-radius: 10px; 
+                                border-radius: 7px; 
                                 border-color: #7F7F7F;
-                                font: bold 14px;
-                                min-width: 3em;
+                                font: bold 10px;
+                                min-width: 2em;
                                 padding: 6px;
                                 }
                             QPushButton:pressed{
@@ -90,7 +95,7 @@ mon_style = '''
 app = QtWidgets.QApplication([])
 
 #-------------------------------------------------------------
-# déclaration fenetre de préconfiguration et de lancement
+# déclaration fenetre GUI
 #-------------------------------------------------------------
   
 
@@ -138,10 +143,8 @@ class premiere_config(QtWidgets.QWidget):
         r+=1
 
         QtWidgets.QShortcut(QtGui.QKeySequence('Esc'), self, self.close)
-
     def clique(self):
         self.close()
-  
 
 class choix_system(QtWidgets.QWidget):
     def __init__(self, mon_style):
@@ -179,42 +182,20 @@ class choix_system(QtWidgets.QWidget):
     def bascul(self):
         recup = self.sender()
         self.cmb_1.setEnabled(recup.isChecked())
-  
 
-class mafen(QtWidgets.QWidget):
-    def __init__(self,mon_style):
+class mafen(QtWidgets.QMainWindow):
+    def __init__(self,mon_style,mon_bot):
         super(mafen, self).__init__()
-        self.resize(300,150)
-        self.setWindowTitle('Enjoy your campagne')
-        self.setStyleSheet(mon_style)  
 
-        global dico_pj
+        # création des Widgets
+        ma_fenetre_principal(self , mon_style)
+        ma_barre_de_menu(self)
+        mon_pied_de_page(self )
 
-        r=c=0
-        
-        
-        self.grille = QtWidgets.QGridLayout(self)#exist en Hlayout et Vlayout
+        # Création des layouts et affectation Widget
+        coord = (0,0)
+        coord = mes_layouts(self , coord)   
 
-
-        
-        self.lbl_1 = QtWidgets.QLabel("Mon gestionnaire de campagne de la môôôôôôôrt !",self)
-        self.grille.addWidget(self.lbl_1, r,c,1,5)
-        r += 1
-
-        self.cmb_1 = QtWidgets.QComboBox()
-        for key in dico_pj: 
-            if not key == "system":
-                print(str(key))
-                self.cmb_1.addItem(str(key))
-        self.cmb_1.setCurrentIndex(0)
-        self.grille.addWidget(self.cmb_1, r,c,1,2)
-        r+=1
-
-
-        self.btn_test = QtWidgets.QPushButton('test',self ) #Flat = True     
-        self.btn_test.clicked.connect(self.test)
-        self.grille.addWidget(self.btn_test, r,c,1,2)
-        r+=1
         
 
     def test(self):
@@ -223,8 +204,99 @@ class mafen(QtWidgets.QWidget):
         if action == (0,0):
             action = (1,'test')
             
+    def lanceboton(self):
+        #self.thread = QtCore.QThread(self)
+        #self.worker = worker(self.mon_thread)
+        #self.worker.moveToThread(self.thread)
+        #self.thread.started.connect(self.worker.mamethode)
+        #self.worker.finished.connect(self.thread.quit)
+        #self.thread.start()
+
+        try:
+           self.mon_bot.start()
+           self.lbl_etat_bot.setText("On cherche le bot")
+           global action
+           action = (2, self)
+        except:
+            print('ZeVeuxPo')
+
+    def lancebotof(self): 
+        global action
+        #self.mon_bot.quit()
+        if action == (0,0):
+            action = (3,'The End')
+
+def ma_barre_de_menu(self):
+    global dico_pj
+    self.main_Menu = self.menuBar()
+    self.PJ_Menu = self.main_Menu.addMenu("PJ")
+    self.PJ_Menu.addAction("Gestion Pjs")
+    for key in dico_pj:
+        if key != 'system':
+            self.PJ_Menu.addAction(dico_pj[key]['nom'])
         
+    self.Camp_Menu = self.main_Menu.addMenu("Campagne")
+    self.Conf_Menu = self.main_Menu.addMenu("Configuration")
+    self.Aide_Menu = self.main_Menu.addMenu("?")
+    self.Aide_Menu.addAction("Aide")
+    self.Aide_Menu.addAction("A propos")
+
+def ma_fenetre_principal(self, monstyle):
+    self.resize(300,150)
+    self.setWindowTitle('Enjoy your campagne')
+    self.setStyleSheet(mon_style)  
+    self.mon_bot = mon_bot
+
+def mon_pied_de_page(self):
+
+    self.btn_boton = QtWidgets.QPushButton('Boton',self ) #Flat = True   
+    self.btn_boton.clicked.connect(self.lanceboton)
     
+    self.btn_botof = QtWidgets.QPushButton('Botof',self ) #Flat = True     
+    self.btn_botof.clicked.connect(self.lancebotof)
+
+    self.lbl_etat_bot = QtWidgets.QLabel("le bot est Off", self)
+
+
+def mes_layouts(self, coord):
+    (r,c) = coord
+    self.main_widget = QtWidgets.QWidget()
+    self.setCentralWidget(self.main_widget)
+
+    self.grille = QtWidgets.QGridLayout(self.main_widget) #exist en Hlayout et Vlayout
+    self.fendroite = QtWidgets.QVBoxLayout()
+
+    self.grille.addLayout(self.fendroite,r,c,1,2)
+    r +=1 
+
+    self.pieddepage = QtWidgets.QHBoxLayout()
+    self.grille.addLayout(self.pieddepage,r,c,1,2)
+    r +=1  
+
+
+    #affectation widget
+    self.pieddepage.addWidget(self.btn_boton)
+    self.pieddepage.addWidget(self.btn_botof)
+    self.pieddepage.addWidget(self.lbl_etat_bot)
+    
+    return (r,c)
+
+
+
+class worker(QtCore.QObject):
+    finished = QtCore.Signal()
+    def __init__(self, mavar):
+        super().__init__()
+        try:
+           mon_thread.start()
+        except:
+           print('ZeVeuxPo')
+        self.mavar = mavar
+    def mamethode(self):
+        for i in range(10):
+            print(str(i)+self.mavar)
+            time.sleep(3)
+        self.finished.emit()
 
 #-------------------------------------------------------------
 # On regarde où on est
@@ -494,7 +566,6 @@ async def on_message(message):
         else:
             await message.channel.send('''$pj d'accord mais $pj combien  ?''' )
         
-
 @client.event
 async def my_background_task():
     await client.wait_until_ready()
@@ -508,13 +579,13 @@ async def my_background_task():
     await asyncio.sleep(tpspool) #
 
     liste_blague = ['''Staying alive, staying a live. Ah, ah ah....''',\
-                    '''Inserez une blageu ici''',\
-                    '''Pour ce que j'en dit il faudrais mieux que je me taise''']
+                    '''Inserez une blague ici''',\
+                    '''De ceux qui n'ont rien à dire, les meilleurs sont ceux qui se taisent''']
 
     liste_intro=['''Je viens d'arriver, je ne vous ai pas manqué ?''',\
             '''Poypoy ! Pour rappel on me parle avec des $ ''',\
             '''Faites $help pour apprendre à me parler''',\
-            '''Eh Lanceur est arrivééé, sans se préceeeeerrrr...''']
+            '''Et Lanceur est arrivééé, sans se préceeeeerrrr...''']
     if justearrived :
 
        
@@ -532,6 +603,14 @@ async def my_background_task():
             monmessage = str(corps)
             await channel.send(monmessage)
             action = (0,0)
+        if requete == 2:
+            corps.lbl_etat_bot.setText('Je suis actif!')
+            action = (0,0)
+        elif requete == 3:
+            print('fin')
+            client.close()
+            action = (0,0)
+            
         if count % int(600/tpspool) == 0:
             
             random.shuffle(liste_blague)
@@ -551,29 +630,29 @@ class class1(Thread):
     def __init__(self):
         Thread.__init__(self) 
         
-
     def run(self):
         global client
         client.loop.create_task(my_background_task())
         global dico_conf
         codesecret = dico_conf['token']
-        print('007')
         client.run(codesecret)
+
+    def arrette(self):
+        global client
+        client.JeMArreteDAccord = True
 
 
 # Création des threads
-thread_1 = class1()
-
+mon_bot = class1()
 
 # Lancement des threads
-thread_1.start()
+#thread_1.start()
 
-
-
-fen = mafen(mon_style)
+fen = mafen(mon_style,mon_bot)
 fen.show()
 app.exec_()
-# Attend que les threads se terminent
-thread_1.join()
+
+# Attend que le thread se terminent
+#thread_1.join()
 
 print('end of line')
