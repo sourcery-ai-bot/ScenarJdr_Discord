@@ -1,0 +1,83 @@
+QMainWindow {
+    background-color : #202020;
+    color : #DFDFDF;
+    border-color : #7F7F7F;
+    }
+QWidget {
+    background-color : #202020;
+    color : #DFDFDF;
+    border-color : #7F7F7F;
+    }
+QPushButton {
+    border-style: outset;
+    border-width: 1px;
+    border-radius: 7px; 
+    border-color: #7F7F7F;
+    font: bold 10px;
+    min-width: 2em;
+    padding: 6px;
+    }
+QPushButton:pressed{
+    background-color: #777777;
+    color : black;
+    border-style: inset;
+    }
+QComboBox {
+    color : #505050 ;
+    border: 1px solid ;
+    border-color: #7F7F7F; 
+    border-radius: 3px;
+    padding: 6px;
+    min-width: 6em;
+    }
+QComboBox:enabled{
+    color : #DFDFDF ;
+    border: 1px solid ;
+    border-color: #7F7F7F; 
+    border-radius: 3px;
+    padding: 6px;
+    min-width: 6em;
+    }
+QProgressBar {
+    background-color : #202020;
+    color : #7F7F7F;
+    border: 1px solid ;
+    border-color: #7F7F7F; 
+    border-radius: 3px;
+    padding: 6px;
+    }
+QLineEdit {                
+    border: 1px solid ;
+    border-color: #7F7F7F; 
+    border-radius: 3px;
+    }
+QCheckbox{
+    border: 1px solid ;
+    border-color: #7F7F7F; 
+    border-radius: 3px;
+    }
+QMenuBar {
+    background-color: #202020;
+    color: #DFDFDF;
+    border: 1px solid #7F7F7F;   
+    }
+
+QMenuBar::item {
+    background-color: #202020;
+    color: #DFDFDF;
+    }
+
+QMenuBar::item::selected {
+    background-color: #777777;
+    color : black;
+    }
+
+QMenu {
+    background-color: rgb(49,49,49);
+    color: rgb(255,255,255);
+    border: 1px solid #000;           
+}
+
+QMenu::item::selected {
+    background-color: rgb(30,30,30);
+}
