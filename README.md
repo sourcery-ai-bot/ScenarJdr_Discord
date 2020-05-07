@@ -24,8 +24,11 @@ Rôle du Bot:
 --------------------------------------------------------------------------
 
 Etat actuel:
-Pré Interface -> demande les paramètres nécéssaire (id du canal discord et token du bot )  
-Interface -> juste une fenetre une combobox , et un bouton test qui lance un message prédéfinis du bot
+Fenetre de chargement des fichiers nécéssaires (sources, style et config)
+Fentre principal en dark theme
+bouton on qui lance le bot , 
+/!\ bouton off ne marche pas (la connexion au bot reste donc active même si l'on ferme la fenetre )
+
 Bot  -> lance X dé à la demande selon le système de 7sea V2 (faire de groupe de dé pour atteindre la valeur 10 ou plus) plus quelque variante
 
 
