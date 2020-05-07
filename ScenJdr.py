@@ -3,7 +3,7 @@
 import os
 import sys 
 import json
-import random  #gestion des aléas des dés
+import random 
 import time
 
 from functools import partial
@@ -14,13 +14,14 @@ import asyncio #gestion d'évènenment asynchrone pour discord
 from threading import Thread # pour programmation parallèle
 
 #-------------------------------------------------------------
-# Variable "globale"
+# Variable "globale" bouh pas bien ! Je sais
 #-------------------------------------------------------------
 
 log = False
 action = (0,0)
 tpspool = 3
-
+ralentisseur = 0
+dico_pj = {}
 
 #-------------------------------------------------------------
 # fonction de suivi
@@ -32,169 +33,182 @@ def printlog(monmsg):
         print(monmsg)
 
 #--------------------------------------------------------------------------
-mon_style = '''
-                            QMainWindow {
-                                background-color : #202020;
-                                color : #DFDFDF;
-                                border-color : #7F7F7F;
-                                }
-                            QWidget {
-                                background-color : #202020;
-                                color : #DFDFDF;
-                                border-color : #7F7F7F;
-                                }
-                            QPushButton {
-                                border-style: outset;
-                                border-width: 1px;
-                                border-radius: 7px; 
-                                border-color: #7F7F7F;
-                                font: bold 10px;
-                                min-width: 2em;
-                                padding: 6px;
-                                }
-                            QPushButton:pressed{
-                                background-color: #777777;
-                                color : black;
-                                border-style: inset;
-                                }
-                            QComboBox {
-                                color : #505050 ;
-                                border: 1px solid ;
-                                border-color: #7F7F7F; 
-                                border-radius: 3px;
-                                padding: 6px;
-                                min-width: 6em;
-                                }
-                            QComboBox:enabled{
-                                color : #DFDFDF ;
-                                border: 1px solid ;
-                                border-color: #7F7F7F; 
-                                border-radius: 3px;
-                                padding: 6px;
-                                min-width: 6em;
-                                }
-                            QProgressBar {
-                                background-color : #202020;
-                                color : #7F7F7F;
-                                border: 1px solid ;
-                                border-color: #7F7F7F; 
-                                border-radius: 3px;
-                                padding: 6px;
-                                }
-                            QLineEdit {                
-                                border: 1px solid ;
-                                border-color: #7F7F7F; 
-                                border-radius: 3px;
-                                }
-                            QCheckbox{
-                                border: 1px solid ;
-                                border-color: #7F7F7F; 
-                                border-radius: 3px;
-                                }'''
 
 app = QtWidgets.QApplication([])
 
 #-------------------------------------------------------------
 # déclaration fenetre GUI
 #-------------------------------------------------------------
-  
+class fen_chargement(QtWidgets.QWidget):
+    def __init__(self,app):
+        super(fen_chargement,self).__init__()
 
-class premiere_config(QtWidgets.QWidget):
-    def __init__(self, dico_conf, mon_style):
-        
-        super(premiere_config, self).__init__()
-        
-        self.setStyleSheet(mon_style)     
-        self.resize(300,200)
-        self.setWindowTitle("Assistant de configuration")
-        
-        self.dico_conf = dico_conf
-        r = c = 0
-        
-        self.grille = QtWidgets.QGridLayout(self)#exist en Hlayout et Vlayout
+        self.setWindowTitle("Loadiiiiiiinnnng")
+        self.resize(300,100)
 
+        self.mon_layout = QtWidgets.QVBoxLayout(self)
+        self.lbl_etape = QtWidgets.QLabel('début du chargement')
+
+        self.mon_layout.addWidget(self.lbl_etape)
+
+        self.val_etape = 0
+        self.progressbar = QtWidgets.QProgressBar()
+        self.progressbar.setRange(0,3)
+        self.progressbar.setValue(self.val_etape)
+        self.progressbar.setTextVisible(False)
         
-        self.lbl_1 = QtWidgets.QLabel('Etape de configuration, Merci de renseigner les informations demandés ',self)
-        self.grille.addWidget(self.lbl_1, r,c,1,1)
-        r+=1
+        self.mon_layout.addWidget(self.progressbar)
 
-        self.lbl_2 = QtWidgets.QLabel("Token du bot de l'appli à vérifier dans la secton developpeur:")
-        self.grille.addWidget(self.lbl_2, r,c,1,1)           
-        r+=1
-        
-        self.le_token = QtWidgets.QLineEdit()
-        self.le_token.setText(self.dico_conf["token"])
-        self.grille.addWidget(self.le_token, r,c,1,1)           
-        r+=1
+        self.show()
 
-        self.lbl_3 = QtWidgets.QLabel("Id du channel Discord:")
-        self.grille.addWidget(self.lbl_3, r,c,1,1)           
-        r+=1
-        
-        self.le_idchan = QtWidgets.QLineEdit()
-        self.le_idchan.setText(self.dico_conf["id_chan"])
-        self.grille.addWidget(self.le_idchan, r,c,1,1)           
-        r+=1
 
-        self.valid = False
-        self.btn_valid = QtWidgets.QPushButton('Ok',self)     
-        self.btn_valid.clicked.connect(self.clique)
-        self.grille.addWidget(self.btn_valid, r,c,1,1)           
-        r+=1
+        QtWidgets.QApplication.processEvents()
 
-        QtWidgets.QShortcut(QtGui.QKeySequence('Esc'), self, self.close)
-    def clique(self):
+        self.chargement_style()
+        self.chargement_config()
+        self.chargement_source()
+        QtWidgets.QApplication.processEvents()
         self.close()
-
-class choix_system(QtWidgets.QWidget):
-    def __init__(self, mon_style):
-      
-        super(choix_system, self).__init__()
         
-        self.setStyleSheet(mon_style)     
-        self.resize(300,50)
-        self.setWindowTitle("Choix crucial!")
-        self.choix = 0
-        self.r = self.c = 0
+    
+    def chargement_style(self):
+        self.val_etape +=1
+        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Le faire avec style')
+        time.sleep(ralentisseur)
+        self.update()
+        global mon_style
+        config = 'style.css'
+        chemin = os.path.dirname(__file__)
+        cheminconfig = os.path.join(chemin, config)
+        try:
+            with open(cheminconfig, "r") as fstyle:
+                mon_style = fstyle.read()
 
-        self.grille = QtWidgets.QGridLayout(self)#exist en Hlayout et Vlayout
+            self.progressbar.setValue(self.val_etape)
+            time.sleep(ralentisseur)
+            self.update()
+            
+   
+        except:
+            mon_style = ''  
 
-        self.lbl_1 = QtWidgets.QLabel('Que voullez-vous faire ? ',self)
-        self.grille.addWidget(self.lbl_1, self.r,self.c,1,2)
-        self.r += 1
+    def chargement_config(self):
+        self.val_etape +=1
+        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir communiquer')
+        self.update()
+        time.sleep(ralentisseur)
+        global dico_conf
+        global token
+        global id_chan
+        global log
+        global tpspool
+        
+        chemin = os.path.dirname(__file__)
+        config = 'config.json'
 
-        self.rad_new = QtWidgets.QRadioButton('Nouvelle campagne', self)
-        self.rad_new.toggled.connect(self.bascul)
-        self.grille.addWidget(self.rad_new, self.r,self.c,1,1)
-        self.rad_old = QtWidgets.QRadioButton('Poursuivre', self)
-        self.rad_old.setChecked(True)
-        self.grille.addWidget(self.rad_old, self.r,self.c+1,1,1)
-        self.r += 1
+        cheminconfig = os.path.join(chemin, config)
+        try:
+           
+            with open(cheminconfig, "r") as source:
+                dico_conf = json.load(source)
+            token = dico_conf["token"]
+            id_chan = dico_conf["id_chan"]
+            log = dico_conf["log"]
+            tpspool = dico_conf["tps_pool"]
+            if tpspool <2:
+                tpspool = 2
 
-        self.cmb_1 = QtWidgets.QComboBox()
-        self.cmb_1.addItems(['7seaV2','DK²'])
-        self.cmb_1.setCurrentIndex(0)
-        self.cmb_1.setEnabled(False)
-        #self.cmb_1.setVisible(False)
-        self.grille.addWidget(self.cmb_1, self.r,self.c,1,2)
-        self.r += 1
+            
+            self.progressbar.setValue(self.val_etape)
+            self.update()
+            time.sleep(ralentisseur)
+            
+        except:
+            #-------------------------------------------------------------
+            # si pas de config alors on en créer un
+            #-------------------------------------------------------------
+            token = "Your secret token here / ton token d'application secret ici"
+            id_chan = "L'ID du canal ici "
+            log = True
+            tpspool = 4
 
-    def bascul(self):
-        recup = self.sender()
-        self.cmb_1.setEnabled(recup.isChecked())
+            printlog("Echec de lecture du fichier config, création automatique")
+            
+            dico_conf= {}
+            dico_conf["token"] = token
+            dico_conf["id_chan"] = id_chan
+            dico_conf["log"] = False
+            dico_conf["tps_pool"] = tpspool
+            
+            with open(cheminconfig, 'w') as source:
+                json.dump(dico_conf,source, indent = 4)
+            
+    def chargement_source(self):
+        self.val_etape +=1
+        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir de quoi on parle !')
+        self.update()
+        time.sleep(ralentisseur)
 
+        chemin = os.path.dirname(__file__)
+        fichier = 'source.json'
+        cheminfichier = os.path.join(chemin,fichier)
+
+        global dico_pj
+
+        try:
+            time.sleep(ralentisseur)
+            with open (cheminfichier, "r") as source:
+                dico_pj = json.load(source)     
+
+            self.progressbar.setValue(self.val_etape)
+            self.update()
+            time.sleep(ralentisseur) 
+
+            self.lbl_etape.setText('Etape '+ str(self.val_etape)+": Savoir s'arreter")
+            self.update()    
+            time.sleep(ralentisseur)
+          
+            
+        except:
+            #-------------------------------------------------------------
+            # si pas de fichier source alors on en créer un bidon
+            #-------------------------------------------------------------
+            dico_comp = {}
+            dico_comp['escrime']= 1
+            dico_comp['parade']= 1
+            dico_carac={}
+            dico_carac["Puissance"]=1
+            dico_carac["Finesse"]=1
+            dico_carac["Esprit"]=1
+            dico_carac["Determination"]=1
+            dico_carac["Panache"]=1
+            pj1 = {}
+            pj1["nom"] = "Noob"
+            pj1["info"] = {'nation':"Noobland"}
+            pj1["carac"] = dico_carac
+            pj1["comp"] = dico_comp
+
+            dico_pj={}
+            dico_pj["system"] = "7seaV2"
+            dico_pj["pj1"] = pj1
+            dico_pj["pj2"] = pj1
+            dico_pj["pj2"]["nom"] = "Noob2"
+        
+            with open(cheminfichier , 'w') as source:
+                json.dump(dico_pj,source, indent = 4)
+ 
 class mafen(QtWidgets.QMainWindow):
     def __init__(self,mon_style,mon_bot):
         super(mafen, self).__init__()
 
         # création des Widgets
-        ma_fenetre_principal(self , mon_style)
-        ma_barre_de_menu(self)
-        mon_pied_de_page(self )
+        self.ma_fenetre_principal(mon_style)
+        self.ma_barre_de_menu()
+        self.mon_pied_de_page()
 
         # Création des layouts et affectation Widget
         coord = (0,0)
-        coord = mes_layouts(self , coord)   
+        coord = self.mes_layouts(coord)   
 
         
 
@@ -226,62 +240,59 @@ class mafen(QtWidgets.QMainWindow):
         if action == (0,0):
             action = (3,'The End')
 
-def ma_barre_de_menu(self):
-    global dico_pj
-    self.main_Menu = self.menuBar()
-    self.PJ_Menu = self.main_Menu.addMenu("PJ")
-    self.PJ_Menu.addAction("Gestion Pjs")
-    for key in dico_pj:
-        if key != 'system':
-            self.PJ_Menu.addAction(dico_pj[key]['nom'])
+    def ma_barre_de_menu(self):
+        global dico_pj
+        self.main_Menu = self.menuBar()
+        self.PJ_Menu = self.main_Menu.addMenu("PJ")
+        self.PJ_Menu.addAction("Gestion Pjs")
+        for key in dico_pj:
+            if key != 'system':
+                self.PJ_Menu.addAction(dico_pj[key]['nom'])
+            
+        self.Camp_Menu = self.main_Menu.addMenu("Campagne")
+        self.Conf_Menu = self.main_Menu.addMenu("Configuration")
+        self.Aide_Menu = self.main_Menu.addMenu("?")
+        self.Aide_Menu.addAction("Aide")
+        self.Aide_Menu.addAction("A propos")
+
+    def ma_fenetre_principal(self, monstyle):
+        self.resize(800,600)
+        self.setWindowTitle('Enjoy your campagne')
+        self.setStyleSheet(mon_style)  
+        self.mon_bot = mon_bot
+
+    def mon_pied_de_page(self):
+
+        self.btn_boton = QtWidgets.QPushButton('Boton',self ) #Flat = True   
+        self.btn_boton.clicked.connect(self.lanceboton)
         
-    self.Camp_Menu = self.main_Menu.addMenu("Campagne")
-    self.Conf_Menu = self.main_Menu.addMenu("Configuration")
-    self.Aide_Menu = self.main_Menu.addMenu("?")
-    self.Aide_Menu.addAction("Aide")
-    self.Aide_Menu.addAction("A propos")
+        self.btn_botof = QtWidgets.QPushButton('Botof',self ) #Flat = True     
+        self.btn_botof.clicked.connect(self.lancebotof)
 
-def ma_fenetre_principal(self, monstyle):
-    self.resize(300,150)
-    self.setWindowTitle('Enjoy your campagne')
-    self.setStyleSheet(mon_style)  
-    self.mon_bot = mon_bot
+        self.lbl_etat_bot = QtWidgets.QLabel("le bot est Off", self)
 
-def mon_pied_de_page(self):
+    def mes_layouts(self, coord):
+        (r,c) = coord
+        self.main_widget = QtWidgets.QWidget()
+        self.setCentralWidget(self.main_widget)
 
-    self.btn_boton = QtWidgets.QPushButton('Boton',self ) #Flat = True   
-    self.btn_boton.clicked.connect(self.lanceboton)
-    
-    self.btn_botof = QtWidgets.QPushButton('Botof',self ) #Flat = True     
-    self.btn_botof.clicked.connect(self.lancebotof)
+        self.grille = QtWidgets.QGridLayout(self.main_widget) #exist en Hlayout et Vlayout
+        self.fendroite = QtWidgets.QVBoxLayout()
 
-    self.lbl_etat_bot = QtWidgets.QLabel("le bot est Off", self)
+        self.grille.addLayout(self.fendroite,r,c,1,2)
+        r +=1 
+
+        self.pieddepage = QtWidgets.QHBoxLayout()
+        self.grille.addLayout(self.pieddepage,r,c,1,2)
+        r +=1  
 
 
-def mes_layouts(self, coord):
-    (r,c) = coord
-    self.main_widget = QtWidgets.QWidget()
-    self.setCentralWidget(self.main_widget)
-
-    self.grille = QtWidgets.QGridLayout(self.main_widget) #exist en Hlayout et Vlayout
-    self.fendroite = QtWidgets.QVBoxLayout()
-
-    self.grille.addLayout(self.fendroite,r,c,1,2)
-    r +=1 
-
-    self.pieddepage = QtWidgets.QHBoxLayout()
-    self.grille.addLayout(self.pieddepage,r,c,1,2)
-    r +=1  
-
-
-    #affectation widget
-    self.pieddepage.addWidget(self.btn_boton)
-    self.pieddepage.addWidget(self.btn_botof)
-    self.pieddepage.addWidget(self.lbl_etat_bot)
-    
-    return (r,c)
-
-
+        #affectation widget
+        self.pieddepage.addWidget(self.btn_boton)
+        self.pieddepage.addWidget(self.btn_botof)
+        self.pieddepage.addWidget(self.lbl_etat_bot)
+        
+        return (r,c)
 
 class worker(QtCore.QObject):
     finished = QtCore.Signal()
@@ -302,99 +313,13 @@ class worker(QtCore.QObject):
 # On regarde où on est
 #-------------------------------------------------------------
 
-chemin = os.path.dirname(__file__)
 
-#-------------------------------------------------------------
-#test d'accès au fichier config 
-#-------------------------------------------------------------
-config = 'config.json'
-cheminconfig = os.path.join(chemin, config)
-try:
-    with open(cheminconfig, "r") as source:
-        dico_conf = json.load(source)
-    token = dico_conf["token"]
-    id_chan = dico_conf["id_chan"]
-    log = dico_conf["log"]
-    tpspool = dico_conf["tps_pool"]
-    if tpspool <2:
-        tpspool = 2
-    printlog("Lecture fichier config réussi")
+#test fenetre chargement
 
-    
-except:
-    #-------------------------------------------------------------
-    # si pas de config alors on en créer un
-    #-------------------------------------------------------------
-    token = "Your secret token here / ton token d'application secret ici"
-    id_chan = "L'ID du canal ici "
-    log = True
-    tpspool = 4
-
-    printlog("Echec de lecture du fichier config, création automatique")
-    
-    dico_conf= {}
-    dico_conf["token"] = token
-    dico_conf["id_chan"] = id_chan
-    dico_conf["log"] = False
-    dico_conf["tps_pool"] = tpspool
-    
-    with open(cheminconfig, 'w') as source:
-        json.dump(dico_conf,source, indent = 4)
-    
-    fenetre = premiere_config(dico_conf,mon_style)
-    fenetre.show()
-    app.exec_()
+chargeeeeer = fen_chargement(app)
 
 
-#-------------------------------------------------------------
-#test d'accès au fichier pj
-#-------------------------------------------------------------
-
-
-chemin = os.path.dirname(__file__)
-fichier = 'source.json'
-cheminfichier = os.path.join(chemin,fichier)
-
-
-fenetre = choix_system(mon_style)
-fenetre.show()
-app.exec_()
-
-try:
-    with open (cheminfichier, "r") as source:
-        dico_pj = json.load(source)
-    printlog("chargement liste Pj")
-
-    
-except:
-    #-------------------------------------------------------------
-    # si pas de fichier source alors on en créer un bidon
-    #-------------------------------------------------------------
-    dico_comp = {}
-    dico_comp['escrime']= 1
-    dico_comp['parade']= 1
-    dico_carac={}
-    dico_carac["Puissance"]=1
-    dico_carac["Finesse"]=1
-    dico_carac["Esprit"]=1
-    dico_carac["Determination"]=1
-    dico_carac["Panache"]=1
-    pj1 = {}
-    pj1["nom"] = "Noob"
-    pj1["nation"] = "Noobland"
-    pj1["carac"] = dico_carac
-    pj1["comp"] = dico_comp
-
-    dico_pj={}
-    dico_pj["system"] = "7seaV2"
-    dico_pj["pj1"] = pj1
-    dico_pj["pj2"] = pj1
-
-    printlog("Absence de fichier PJ création automatique de source.json")
-    printlog(str(dico_pj))
-    with open(cheminfichier , 'w') as source:
-        json.dump(dico_pj,source, indent = 4)
-    
+  
 #-------------------------------------------------------------
 # création du client discord
 #-------------------------------------------------------------
@@ -655,4 +580,4 @@ app.exec_()
 # Attend que le thread se terminent
 #thread_1.join()
 
-print('end of line')
+printlog('end of line')
