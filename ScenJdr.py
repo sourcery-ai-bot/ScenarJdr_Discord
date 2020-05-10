@@ -67,7 +67,6 @@ class fen_chargement(QtWidgets.QWidget):
         self.chargement_style()
         self.chargement_config()
         self.chargement_source()
-        QtWidgets.QApplication.processEvents()
         self.close()
         
     
@@ -198,9 +197,10 @@ class fen_chargement(QtWidgets.QWidget):
                 json.dump(dico_pj,source, indent = 4)
  
 class mafen(QtWidgets.QMainWindow):
-    def __init__(self,mon_style,mon_bot):
+    def __init__(self,mon_style):
         super(mafen, self).__init__()
-
+        self.etat_bot = False
+        
         # création des Widgets
         self.ma_fenetre_principal(mon_style)
         self.ma_barre_de_menu()
@@ -209,9 +209,7 @@ class mafen(QtWidgets.QMainWindow):
         # Création des layouts et affectation Widget
         coord = (0,0)
         coord = self.mes_layouts(coord)   
-
-        
-
+        self.page_pj(self.fendroite,'pj1')
     def test(self):
         #my_background_task()
         global action
@@ -219,35 +217,44 @@ class mafen(QtWidgets.QMainWindow):
             action = (1,'test')
             
     def lanceboton(self):
-        #self.thread = QtCore.QThread(self)
-        #self.worker = worker(self.mon_thread)
-        #self.worker.moveToThread(self.thread)
-        #self.thread.started.connect(self.worker.mamethode)
-        #self.worker.finished.connect(self.thread.quit)
-        #self.thread.start()
+        global action
+        if self.etat_bot == False:
+            self.etat_bot = True
+            self.mon_bot = class1()
+            print(str(self.mon_bot))
 
-        try:
-           self.mon_bot.start()
-           self.lbl_etat_bot.setText("On cherche le bot")
-           global action
-           action = (2, self)
-        except:
-            print('ZeVeuxPo')
+            try:
+                self.mon_bot.start()
+                self.lbl_etat_bot.setText("On cherche le bot")
+                global action
+                action = (2, self)
+            except Exception as pourquoi:
+                print('ZeVeuxPo :' + str(pourquoi))
+        else:
+                self.lbl_etat_bot.setText("Bot déjà actif")
+                print(str(self.mon_bot))          
 
     def lancebotof(self): 
         global action
+
         #self.mon_bot.quit()
         if action == (0,0):
-            action = (3,'The End')
-
+            action = (3,self)
+            
     def ma_barre_de_menu(self):
         global dico_pj
         self.main_Menu = self.menuBar()
         self.PJ_Menu = self.main_Menu.addMenu("PJ")
         self.PJ_Menu.addAction("Gestion Pjs")
+        self.list_action = []
+        i = 0
         for key in dico_pj:
             if key != 'system':
-                self.PJ_Menu.addAction(dico_pj[key]['nom'])
+                self.list_action.append(QtWidgets.QAction('&'+str(dico_pj[key]['nom'])))
+                self.list_action[i].triggered.connect(partial(self.essaiboutonmenu,key))
+                self.PJ_Menu.addAction(self.list_action[i])
+                i += 1
+                
             
         self.Camp_Menu = self.main_Menu.addMenu("Campagne")
         self.Conf_Menu = self.main_Menu.addMenu("Configuration")
@@ -256,11 +263,10 @@ class mafen(QtWidgets.QMainWindow):
         self.Aide_Menu.addAction("A propos")
 
     def ma_fenetre_principal(self, monstyle):
-        self.resize(800,600)
+        self.resize(600,300)
         self.setWindowTitle('Enjoy your campagne')
         self.setStyleSheet(mon_style)  
-        self.mon_bot = mon_bot
-
+        
     def mon_pied_de_page(self):
 
         self.btn_boton = QtWidgets.QPushButton('Boton',self ) #Flat = True   
@@ -277,8 +283,8 @@ class mafen(QtWidgets.QMainWindow):
         self.setCentralWidget(self.main_widget)
 
         self.grille = QtWidgets.QGridLayout(self.main_widget) #exist en Hlayout et Vlayout
+        
         self.fendroite = QtWidgets.QVBoxLayout()
-
         self.grille.addLayout(self.fendroite,r,c,1,2)
         r +=1 
 
@@ -294,20 +300,41 @@ class mafen(QtWidgets.QMainWindow):
         
         return (r,c)
 
-class worker(QtCore.QObject):
-    finished = QtCore.Signal()
-    def __init__(self, mavar):
-        super().__init__()
+    def page_pj(self, layout, pj_voulu):
+        global dico_pj
+        self.liste_wid_page = []
+        i= 0
+        mon_pj = dico_pj[pj_voulu]
+        for categorie in mon_pj:
+            if categorie == 'nom':
+                self.liste_wid_page.append(QtWidgets.QLabel('Nom : ' + mon_pj['nom']))
+                layout.addWidget(self.liste_wid_page[i])
+                i+=1
+            else:
+                self.liste_wid_page.append(QtWidgets.QLabel(categorie))
+                layout.addWidget(self.liste_wid_page[i])
+                i += 1
+                monhlayout = QtWidgets.QHBoxLayout()
+                self.liste_wid_page.append(monhlayout)
+                i += 1
+                for key in mon_pj[categorie]:
+                    self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(mon_pj[categorie][key])))
+                    monhlayout.addWidget(self.liste_wid_page[i])
+                    i += 1
+                layout.addLayout(monhlayout)
+        for wid in self.liste_wid_page:
+            print(str(wid))
+
+    def destruct_page(self):
+        for wid in self.liste_wid_page:
+            wid.deleteLater()
+
+    def essaiboutonmenu(self,txtpj):
         try:
-           mon_thread.start()
+            self.destruct_page()
         except:
-           print('ZeVeuxPo')
-        self.mavar = mavar
-    def mamethode(self):
-        for i in range(10):
-            print(str(i)+self.mavar)
-            time.sleep(3)
-        self.finished.emit()
+            pass
+        self.page_pj(self.fendroite,txtpj)
 
 #-------------------------------------------------------------
 # On regarde où on est
@@ -319,7 +346,6 @@ class worker(QtCore.QObject):
 chargeeeeer = fen_chargement(app)
 
 
-  
 #-------------------------------------------------------------
 # création du client discord
 #-------------------------------------------------------------
@@ -493,6 +519,7 @@ async def on_message(message):
         
 @client.event
 async def my_background_task():
+    global client
     await client.wait_until_ready()
     global id_chan
     global action
@@ -524,19 +551,23 @@ async def my_background_task():
         count += 1
         requete , corps = action
         if requete == 1:
-            print(corps)
             monmessage = str(corps)
             await channel.send(monmessage)
             action = (0,0)
-        if requete == 2:
+        elif requete == 2:
             corps.lbl_etat_bot.setText('Je suis actif!')
             action = (0,0)
-        elif requete == 3:
-            print('fin')
-            client.close()
+        elif requete == 3:            
             action = (0,0)
+            corps.lbl_etat_bot.setText('Le bot fait Dodo')
+            corps.etat_bot = False
+            action = (0,0)
+            print('client close')
+            await client.close()
+            client = discord.Client()
             
-        if count % int(600/tpspool) == 0:
+            
+        elif count % int(600/tpspool) == 0:
             
             random.shuffle(liste_blague)
             await channel.send(liste_blague[0])
@@ -544,8 +575,7 @@ async def my_background_task():
         
         
         await asyncio.sleep(tpspool) # task runs every 60 seconds
-      
-            
+               
 #-------------------------------------------------------------
 # création de class pour thread
 #-------------------------------------------------------------
@@ -554,30 +584,22 @@ class class1(Thread):
 
     def __init__(self):
         Thread.__init__(self) 
-        
+        print('init class1')
+
     def run(self):
+        print('debut run')
         global client
         client.loop.create_task(my_background_task())
         global dico_conf
         codesecret = dico_conf['token']
         client.run(codesecret)
+        
+        print('testnfin')
+        
+    
 
-    def arrette(self):
-        global client
-        client.JeMArreteDAccord = True
-
-
-# Création des threads
-mon_bot = class1()
-
-# Lancement des threads
-#thread_1.start()
-
-fen = mafen(mon_style,mon_bot)
+fen = mafen(mon_style)
 fen.show()
 app.exec_()
-
-# Attend que le thread se terminent
-#thread_1.join()
 
 printlog('end of line')
