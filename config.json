@@ -2,5 +2,6 @@
     "token" : "your token number",
     "id_chan" : "your channel ID",
     "log" : true   ,
-    "tps_pool" : 3
+    "tps_pool" : 3,
+    "champ_par_ligne": 3
 }
