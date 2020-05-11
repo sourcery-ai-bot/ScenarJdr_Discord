@@ -1,37 +1,65 @@
 {
     "system": "7seaV2",
     "pj1": {
-        "nom": "Don Noob",
-        "info": {
-            "nation": "Castille"
-            },
-        "carac": {
-            "Puissance": 1,
+        "Nom": "Joueur 1",
+        "Information": {
+            "Nation": "ici"
+        },
+        "Caract\u00e9ristique": {
+            "Gaillardise": 1,
             "Finesse": 1,
             "Esprit": 1,
-            "Determination": 1,
+            "R\u00e9solution": 1,
             "Panache": 1
         },
-        "comp": {
-            "escrime": 3,
-            "parade": 3
+        "Comp\u00e9tence": {
+            "Art de la guerre": 0,
+            "Athl\u00e9tisme": 0,
+            "Bagarre": 0,
+            "Convaincre": 0,
+            "D\u00e9rober": 0,
+            "Dissimulation": 0,
+            "Empathie": 0,
+            "Equitation": 0,
+            "Erudition": 0,
+            "Escrime": 0,
+            "Intimidation": 0,
+            "Investigation": 0,
+            "Navigation": 0,
+            "Repr\u00e9sentation": 0,
+            "Subornation": 0,
+            "Viser": 0
         }
     },
     "pj2": {
-        "nom": " De Noob",
-        "info": {
-            "nation": "Montaigne"
-            },
-        "carac": {
-            "Puissance": 1,
+        "Nom": "Joueur 2",
+        "Information": {
+            "Nation": "la"
+        },
+        "Caract\u00e9ristique": {
+            "Gaillardise": 1,
             "Finesse": 1,
             "Esprit": 1,
-            "Determination": 1,
+            "R\u00e9solution": 1,
             "Panache": 1
         },
-        "comp": {
-            "escrime": 3,
-            "parade": 3
+        "Comp\u00e9tence": {
+            "Art de la guerre": 0,
+            "Athl\u00e9tisme": 0,
+            "Bagarre": 0,
+            "Convaincre": 0,
+            "D\u00e9rober": 0,
+            "Dissimulation": 0,
+            "Empathie": 0,
+            "Equitation": 0,
+            "Erudition": 0,
+            "Escrime": 0,
+            "Intimidation": 0,
+            "Investigation": 0,
+            "Navigation": 0,
+            "Repr\u00e9sentation": 0,
+            "Subornation": 0,
+            "Viser": 0
         }
     }
 }
