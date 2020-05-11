@@ -156,7 +156,7 @@ class fen_chargement(QtWidgets.QWidget):
 
         try:
             time.sleep(ralentisseur)
-            with open (cheminfichier, "r") as source:
+            with open (cheminfichier, "r", encoding='utf-8') as source:
                 dico_pj = json.load(source)     
 
             self.progressbar.setValue(self.val_etape)
@@ -173,8 +173,8 @@ class fen_chargement(QtWidgets.QWidget):
             # si pas de fichier source alors on en créer un bidon
             #-------------------------------------------------------------
             dico_comp = {}
-            dico_comp['escrime']= 1
-            dico_comp['parade']= 1
+            dico_comp['Escrime']= 1
+            dico_comp['Parade']= 1
             dico_carac={}
             dico_carac["Puissance"]=1
             dico_carac["Finesse"]=1
@@ -182,18 +182,18 @@ class fen_chargement(QtWidgets.QWidget):
             dico_carac["Determination"]=1
             dico_carac["Panache"]=1
             pj1 = {}
-            pj1["nom"] = "Noob"
-            pj1["info"] = {'nation':"Noobland"}
-            pj1["carac"] = dico_carac
-            pj1["comp"] = dico_comp
+            pj1["Nom"] = "Noob"
+            pj1["Information"] = {'Nation':"Noobland"}
+            pj1["Caractéristique"] = dico_carac
+            pj1["Compétence"] = dico_comp
 
             dico_pj={}
             dico_pj["system"] = "7seaV2"
             dico_pj["pj1"] = pj1
             dico_pj["pj2"] = pj1
-            dico_pj["pj2"]["nom"] = "Noob2"
+            dico_pj["pj2"]["Nom"] = "Noob2"
         
-            with open(cheminfichier , 'w') as source:
+            with open(cheminfichier , 'w', encoding='utf-8') as source:
                 json.dump(dico_pj,source, indent = 4)
  
 class mafen(QtWidgets.QMainWindow):
@@ -250,7 +250,7 @@ class mafen(QtWidgets.QMainWindow):
         i = 0
         for key in dico_pj:
             if key != 'system':
-                self.list_action.append(QtWidgets.QAction('&'+str(dico_pj[key]['nom'])))
+                self.list_action.append(QtWidgets.QAction('&'+str(dico_pj[key]['Nom'])))
                 self.list_action[i].triggered.connect(partial(self.essaiboutonmenu,key))
                 self.PJ_Menu.addAction(self.list_action[i])
                 i += 1
@@ -306,24 +306,44 @@ class mafen(QtWidgets.QMainWindow):
         i= 0
         mon_pj = dico_pj[pj_voulu]
         for categorie in mon_pj:
-            if categorie == 'nom':
-                self.liste_wid_page.append(QtWidgets.QLabel('Nom : ' + mon_pj['nom']))
-                layout.addWidget(self.liste_wid_page[i])
-                i+=1
+            if categorie == 'Nom':
+                monhlayout = QtWidgets.QHBoxLayout()
+                self.liste_wid_page.append(monhlayout)
+                i += 1
+                self.liste_wid_page.append(QtWidgets.QLabel('Nom : ' + mon_pj['Nom']))
+                monhlayout.addWidget(self.liste_wid_page[i])
+                i += 1
+                self.liste_wid_page.append(QtWidgets.QPushButton('edit'))
+                monhlayout.addWidget(self.liste_wid_page[i])
+                i += 1
+                layout.addLayout(monhlayout)
             else:
                 self.liste_wid_page.append(QtWidgets.QLabel(categorie))
                 layout.addWidget(self.liste_wid_page[i])
                 i += 1
-                monhlayout = QtWidgets.QHBoxLayout()
-                self.liste_wid_page.append(monhlayout)
+                monglayout = QtWidgets.QGridLayout()
+                self.liste_wid_page.append(monglayout)
                 i += 1
+                r = 0
+                nbkey = 0
+                c = 0
                 for key in mon_pj[categorie]:
                     self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(mon_pj[categorie][key])))
-                    monhlayout.addWidget(self.liste_wid_page[i])
+                    monglayout.addWidget(self.liste_wid_page[i],r,c)
                     i += 1
-                layout.addLayout(monhlayout)
-        for wid in self.liste_wid_page:
-            print(str(wid))
+                    self.liste_wid_page.append(QtWidgets.QPushButton('+'))
+                    self.liste_wid_page[i].clicked.connect(partial(self.pluspj,(pj_voulu,categorie,key)))
+                    monglayout.addWidget(self.liste_wid_page[i],r,c+1)
+                    i += 1
+                    self.liste_wid_page.append(QtWidgets.QPushButton('-'))
+                    monglayout.addWidget(self.liste_wid_page[i],r,c+2)
+                    i += 1
+                    if c > 0:
+                        r += 1
+                    nbkey += 1
+                    c = (nbkey % 2) *3 
+                layout.addLayout(monglayout)
+        
 
     def destruct_page(self):
         for wid in self.liste_wid_page:
@@ -335,7 +355,8 @@ class mafen(QtWidgets.QMainWindow):
         except:
             pass
         self.page_pj(self.fendroite,txtpj)
-
+    def pluspj(self,datas):
+        print(datas)
 #-------------------------------------------------------------
 # On regarde où on est
 #-------------------------------------------------------------
