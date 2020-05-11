@@ -22,6 +22,7 @@ action = (0,0)
 tpspool = 3
 ralentisseur = 0
 dico_pj = {}
+champ_par_ligne = 3
 
 #-------------------------------------------------------------
 # fonction de suivi
@@ -31,6 +32,16 @@ def printlog(monmsg):
     global log
     if log:
         print(monmsg)
+
+def sauve_dico():
+    global dico_pj
+    chemin = os.path.dirname(__file__)
+    fichier = 'source.json'
+    cheminfichier = os.path.join(chemin,fichier)
+
+    with open(cheminfichier , 'w', encoding='utf-8') as source:
+                json.dump(dico_pj,source, indent = 4)
+ 
 
 #--------------------------------------------------------------------------
 
@@ -101,7 +112,8 @@ class fen_chargement(QtWidgets.QWidget):
         global id_chan
         global log
         global tpspool
-        
+        global champ_par_ligne
+
         chemin = os.path.dirname(__file__)
         config = 'config.json'
 
@@ -114,6 +126,8 @@ class fen_chargement(QtWidgets.QWidget):
             id_chan = dico_conf["id_chan"]
             log = dico_conf["log"]
             tpspool = dico_conf["tps_pool"]
+            champ_par_ligne = dico_conf["champ_par_ligne"]
+
             if tpspool <2:
                 tpspool = 2
 
@@ -130,6 +144,7 @@ class fen_chargement(QtWidgets.QWidget):
             id_chan = "L'ID du canal ici "
             log = True
             tpspool = 4
+            champ_par_ligne = 3
 
             printlog("Echec de lecture du fichier config, création automatique")
             
@@ -138,6 +153,7 @@ class fen_chargement(QtWidgets.QWidget):
             dico_conf["id_chan"] = id_chan
             dico_conf["log"] = False
             dico_conf["tps_pool"] = tpspool
+            dico_conf["champ_par_ligne"] = champ_par_ligne
             
             with open(cheminconfig, 'w') as source:
                 json.dump(dico_conf,source, indent = 4)
@@ -193,9 +209,8 @@ class fen_chargement(QtWidgets.QWidget):
             dico_pj["pj2"] = pj1
             dico_pj["pj2"]["Nom"] = "Noob2"
         
-            with open(cheminfichier , 'w', encoding='utf-8') as source:
-                json.dump(dico_pj,source, indent = 4)
- 
+            sauve_dico()
+
 class mafen(QtWidgets.QMainWindow):
     def __init__(self,mon_style):
         super(mafen, self).__init__()
@@ -211,7 +226,6 @@ class mafen(QtWidgets.QMainWindow):
         coord = self.mes_layouts(coord)   
         self.page_pj(self.fendroite,'pj1')
     def test(self):
-        #my_background_task()
         global action
         if action == (0,0):
             action = (1,'test')
@@ -251,7 +265,7 @@ class mafen(QtWidgets.QMainWindow):
         for key in dico_pj:
             if key != 'system':
                 self.list_action.append(QtWidgets.QAction('&'+str(dico_pj[key]['Nom'])))
-                self.list_action[i].triggered.connect(partial(self.essaiboutonmenu,key))
+                self.list_action[i].triggered.connect(partial(self.affiche_page_pj,key))
                 self.PJ_Menu.addAction(self.list_action[i])
                 i += 1
                 
@@ -262,6 +276,26 @@ class mafen(QtWidgets.QMainWindow):
         self.Aide_Menu.addAction("Aide")
         self.Aide_Menu.addAction("A propos")
 
+    def actualise_menu(self):
+        global dico_pj
+        try:
+
+            for action in self.list_action:
+                action.deleteLater()
+
+            print('delete action')
+        except:
+            pass
+
+        i = 0
+        self.list_action = []
+        for key in dico_pj:
+            if key != 'system':
+                self.list_action.append(QtWidgets.QAction('&'+str(dico_pj[key]['Nom'])))
+                self.list_action[i].triggered.connect(partial(self.affiche_page_pj,key))
+                self.PJ_Menu.addAction(self.list_action[i])
+                i += 1    
+        
     def ma_fenetre_principal(self, monstyle):
         self.resize(600,300)
         self.setWindowTitle('Enjoy your campagne')
@@ -291,72 +325,134 @@ class mafen(QtWidgets.QMainWindow):
         self.pieddepage = QtWidgets.QHBoxLayout()
         self.grille.addLayout(self.pieddepage,r,c,1,2)
         r +=1  
+       
 
 
         #affectation widget
+    
         self.pieddepage.addWidget(self.btn_boton)
         self.pieddepage.addWidget(self.btn_botof)
         self.pieddepage.addWidget(self.lbl_etat_bot)
         
+        
+
         return (r,c)
 
     def page_pj(self, layout, pj_voulu):
         global dico_pj
+        global champ_par_ligne
+
         self.liste_wid_page = []
         i= 0
         mon_pj = dico_pj[pj_voulu]
         for categorie in mon_pj:
+            self.liste_wid_page.append(QtWidgets.QLabel(categorie))
+            layout.addWidget(self.liste_wid_page[i])
+            i += 1
+            monglayout = QtWidgets.QGridLayout()
+            self.liste_wid_page.append(monglayout)
+            i += 1
+            r = 0
+            nbkey = 0
+            c = 0
             if categorie == 'Nom':
-                monhlayout = QtWidgets.QHBoxLayout()
-                self.liste_wid_page.append(monhlayout)
+                self.liste_wid_page.append(QtWidgets.QLabel('Nom complet: ' + mon_pj['Nom']))
+                monglayout.addWidget(self.liste_wid_page[i],r,c)
                 i += 1
-                self.liste_wid_page.append(QtWidgets.QLabel('Nom : ' + mon_pj['Nom']))
-                monhlayout.addWidget(self.liste_wid_page[i])
+                self.liste_wid_page.append(QtWidgets.QPushButton('Edit'))
+                self.liste_wid_page[i].clicked.connect(partial(self.edittextpj,(pj_voulu,categorie)))
+                monglayout.addWidget(self.liste_wid_page[i],r,c+1)
                 i += 1
-                self.liste_wid_page.append(QtWidgets.QPushButton('edit'))
-                monhlayout.addWidget(self.liste_wid_page[i])
-                i += 1
-                layout.addLayout(monhlayout)
             else:
-                self.liste_wid_page.append(QtWidgets.QLabel(categorie))
-                layout.addWidget(self.liste_wid_page[i])
-                i += 1
-                monglayout = QtWidgets.QGridLayout()
-                self.liste_wid_page.append(monglayout)
-                i += 1
-                r = 0
-                nbkey = 0
-                c = 0
                 for key in mon_pj[categorie]:
-                    self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(mon_pj[categorie][key])))
-                    monglayout.addWidget(self.liste_wid_page[i],r,c)
-                    i += 1
-                    self.liste_wid_page.append(QtWidgets.QPushButton('+'))
-                    self.liste_wid_page[i].clicked.connect(partial(self.pluspj,(pj_voulu,categorie,key)))
-                    monglayout.addWidget(self.liste_wid_page[i],r,c+1)
-                    i += 1
-                    self.liste_wid_page.append(QtWidgets.QPushButton('-'))
-                    monglayout.addWidget(self.liste_wid_page[i],r,c+2)
-                    i += 1
-                    if c > 0:
-                        r += 1
                     nbkey += 1
-                    c = (nbkey % 2) *3 
-                layout.addLayout(monglayout)
-        
+                    if nbkey > champ_par_ligne:
+                        c = 0
+                        r += 1
+                        nbkey = 1
+                    if  isinstance(mon_pj[categorie][key],int):
+                        self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(mon_pj[categorie][key])))
+                        monglayout.addWidget(self.liste_wid_page[i],r,c)
+                        i += 1
+                        self.liste_wid_page.append(QtWidgets.QPushButton('+'))
+                        self.liste_wid_page[i].clicked.connect(partial(self.plusmoinspj,(pj_voulu,categorie,key),1))
+                        monglayout.addWidget(self.liste_wid_page[i],r,c+1)
+                        i += 1
+                        self.liste_wid_page.append(QtWidgets.QPushButton('-'))
+                        self.liste_wid_page[i].clicked.connect(partial(self.plusmoinspj,(pj_voulu,categorie,key),-1))
+                        monglayout.addWidget(self.liste_wid_page[i],r,c+2)
+                        i += 1
+                        c += 3
+                    else:
+                        self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(mon_pj[categorie][key])))
+                        monglayout.addWidget(self.liste_wid_page[i],r,c)
+                        i += 1
+                        self.liste_wid_page.append(QtWidgets.QPushButton('Edit'))
+                        self.liste_wid_page[i].clicked.connect(partial(self.edittextpj,(pj_voulu,categorie,key)))
+                        monglayout.addWidget(self.liste_wid_page[i],r,c+1)
+                        i += 1
+                        c+= 2
 
+            
+            
+
+            layout.addLayout(monglayout)
+    
     def destruct_page(self):
         for wid in self.liste_wid_page:
             wid.deleteLater()
 
-    def essaiboutonmenu(self,txtpj):
+    def affiche_page_pj(self,txtpj):
         try:
             self.destruct_page()
         except:
             pass
         self.page_pj(self.fendroite,txtpj)
-    def pluspj(self,datas):
-        print(datas)
+    
+    def plusmoinspj(self,datas,increment):
+        global dico_pj
+        (quel_pj,quel_categorie,quel_key) = datas
+        valeur = dico_pj[quel_pj][quel_categorie][quel_key]
+        valeur += increment
+        if valeur >= 0:
+            dico_pj[quel_pj][quel_categorie][quel_key] = valeur
+            self.affiche_page_pj(quel_pj)
+            sauve_dico()
+
+    def edittextpj(self, datas):
+        self.demande_texte = QtWidgets.QDialog(parent = self)
+        self.demande_texte.setWindowTitle('Saisissez votre texte')
+        monVlayout = QtWidgets.QVBoxLayout(self.demande_texte)
+        champ_saisi = QtWidgets.QLineEdit(self.demande_texte)
+        monVlayout.addWidget(champ_saisi)
+        bouton_ok = QtWidgets.QPushButton('ok')
+        bouton_ok.clicked.connect(partial(self.modiftext, champ_saisi, self.demande_texte, datas))
+        monVlayout.addWidget(bouton_ok)
+        
+        self.demande_texte.setLayout(monVlayout)
+        self.demande_texte.show()
+
+    def modiftext(self, champ,mondial, datas):
+        global dico_pj
+        mavaleur = str(champ.text()) 
+        if mavaleur != '':
+            try:
+                (quel_pj,quel_categorie,quel_key) = datas
+                
+                dico_pj[quel_pj][quel_categorie][quel_key] = mavaleur
+                self.affiche_page_pj(quel_pj)
+                
+            except:
+                (quel_pj,quel_categorie) = datas
+                dico_pj[quel_pj][quel_categorie] = mavaleur
+                self.affiche_page_pj(quel_pj)
+                self.actualise_menu()
+            sauve_dico()
+            mondial.close()
+
+    
+
+
 #-------------------------------------------------------------
 # On regarde où on est
 #-------------------------------------------------------------
@@ -459,8 +555,8 @@ async def on_message(message):
 
         recup = dico_pj.get(decortique[1])
         if recup != None:
-            affectation[str(message.author)[0:-5]] = recup['nom']
-            monmessage = str(message.author)[0:-5] + ', vous êtes maintenant : ' + recup['nom']
+            affectation[str(message.author)[0:-5]] = recup['Nom']
+            monmessage = str(message.author)[0:-5] + ', vous êtes maintenant : ' + recup['Nom']
             await message.channel.send(monmessage)
 
     elif message.content.startswith('$hello'):
@@ -524,10 +620,10 @@ async def on_message(message):
                     
             texte_li_pj = 'liste des Pj: \n'
             for key in dico_pj:
-                if not key == "system":
+                if key != "system":
                     nompj = dico_pj[key]
                     print(nompj)
-                    texte_li_pj += key + ' : ' + nompj['nom'] + '\n'
+                    texte_li_pj += key + ' : ' + nompj['Nom'] + '\n'
             await message.channel.send(texte_li_pj)
 
         elif len(requete) > 3 :
