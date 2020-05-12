@@ -24,11 +24,21 @@ Rôle du Bot:
 --------------------------------------------------------------------------
 
 Etat actuel:
-Fenetre de chargement des fichiers nécéssaires (sources, style et config)
-Fentre principal en dark theme
-bouton on qui lance le bot , 
-/!\ bouton off ne marche pas (la connexion au bot reste donc active même si l'on ferme la fenetre )
+A)Interface
+- Fenetre de chargement des fichiers nécéssaires (sources, style et config et fdp)
+- Fentre principal en dark theme
+- Lancement et arret bot
+- modification des valeurs d'un PJ
+- création / suprression d'un PJ
 
-Bot  -> lance X dé à la demande selon le système de 7sea V2 (faire de groupe de dé pour atteindre la valeur 10 ou plus) plus quelque variante
+Bug connu:
+pour le On Off, on peut démarrer et arreter une fois le bot et cela ne fonctionne plus ensuite
+
+B)Bot
+-> lance X dé à la demande selon le système de 7sea V2 (faire de groupe de dé pour atteindre la valeur 10 ou plus) plus quelques variantes
+-> on peut s'attribuer un PJ pour voir apparraitre le nom sur les résultats du Lanceur
+-> consultation fiche (Brut à améliorer pour lisibilité)
+
+
 
 
