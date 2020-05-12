@@ -1,0 +1,40 @@
+{
+    "7seaV2" : 
+    {
+    "Nom": "Mon nom",
+    "Information": {
+        "Nation": "Quelque part"
+        },
+    "Caract\u00e9ristique": {
+        "Gaillardise": 1,
+        "Finesse": 1,
+        "Esprit": 1,
+        "R\u00e9solution": 1,
+        "Panache": 1
+        },
+    "Comp\u00e9tence": {
+        "Art de la guerre": 0,
+        "Athl\u00e9tisme": 0,
+        "Bagarre": 0,
+        "Convaincre": 0,
+        "D\u00e9rober": 0,
+        "Dissimulation": 0,
+        "Empathie": 0,
+        "Equitation": 0,
+        "Erudition": 0,
+        "Escrime": 0    ,
+        "Intimidation": 0,
+        "Investigation": 0,
+        "Navigation": 0,
+        "Repr\u00e9sentation": 0,
+        "Subornation": 0,
+        "Viser": 0
+        },
+    "Compteur": {
+        "Spirale de la mort": [
+            0,
+            20
+            ]
+       }
+    }
+}
