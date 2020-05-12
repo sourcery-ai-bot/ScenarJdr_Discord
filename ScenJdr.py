@@ -22,6 +22,7 @@ action = (0,0)
 tpspool = 3
 ralentisseur = 0
 dico_pj = {}
+dico_fdp = {}
 champ_par_ligne = 3
 
 #-------------------------------------------------------------
@@ -33,14 +34,13 @@ def printlog(monmsg):
     if log:
         print(monmsg)
 
-def sauve_dico():
-    global dico_pj
+def sauve_dico(mon_fichier, dico):
     chemin = os.path.dirname(__file__)
-    fichier = 'source.json'
+    fichier = mon_fichier
     cheminfichier = os.path.join(chemin,fichier)
 
     with open(cheminfichier , 'w', encoding='utf-8') as source:
-                json.dump(dico_pj,source, indent = 4)
+                json.dump(dico,source, indent = 4)
  
 
 #--------------------------------------------------------------------------
@@ -64,7 +64,7 @@ class fen_chargement(QtWidgets.QWidget):
 
         self.val_etape = 0
         self.progressbar = QtWidgets.QProgressBar()
-        self.progressbar.setRange(0,3)
+        self.progressbar.setRange(0,4)
         self.progressbar.setValue(self.val_etape)
         self.progressbar.setTextVisible(False)
         
@@ -77,7 +77,10 @@ class fen_chargement(QtWidgets.QWidget):
 
         self.chargement_style()
         self.chargement_config()
+        self.chargement_fdp()
         self.chargement_source()
+
+        print(dico_fdp)
         self.close()
         
     
@@ -158,6 +161,64 @@ class fen_chargement(QtWidgets.QWidget):
             with open(cheminconfig, 'w') as source:
                 json.dump(dico_conf,source, indent = 4)
             
+    def chargement_fdp(self):
+        self.val_etape +=1
+        self.lbl_etape.setText('Etape '+ str(self.val_etape)+": s'en feuiller précisément")
+        self.update()
+        time.sleep(ralentisseur)
+
+        chemin = os.path.dirname(__file__)
+        fichier = 'fdp.json'
+        cheminfichier = os.path.join(chemin,fichier)
+
+        global dico_fdp
+
+        try:
+            time.sleep(ralentisseur)
+            with open (cheminfichier, "r", encoding='utf-8') as source:
+                dico_fdp = json.load(source)     
+
+            self.progressbar.setValue(self.val_etape)
+            self.update()
+            time.sleep(ralentisseur) 
+
+            
+            time.sleep(ralentisseur)
+          
+            
+        except:
+            #-------------------------------------------------------------
+            # si pas de fichier source alors on en créer un bidon
+            #-------------------------------------------------------------
+            dico_compt = { "Spirale de la mort": [0,20] }
+
+            dico_comp= { "Art de la guerre": 0,"Athlétisme": 0,\
+        "Bagarre": 0, "Convaincre": 0, \
+        "Dérober": 0, "Dissimulation": 0, \
+        "Empathie": 0, "Equitation": 0, \
+        "Erudition": 0, "Escrime": 0, \
+        "Intimidation": 0, "Investigation": 0,\
+        "Navigation": 0, "Représentation": 0, \
+        "Subornation": 0, "Viser": 0}
+            dico_carac={}
+            dico_carac["Puissance"]=1
+            dico_carac["Finesse"]=1
+            dico_carac["Esprit"]=1
+            dico_carac["Determination"]=1
+            dico_carac["Panache"]=1
+            
+            systemD = {"Nom": "Nom"}
+            systemD["Information"] = {'Nation':"Nul part"}
+            systemD["Caractéristique"] = dico_carac
+            systemD["Compétence"] = dico_comp
+            systemD["Compteur"] = dico_compt
+
+            dico_fdp = {}
+            dico_fdp["7seaV2"] = systemD
+            
+            sauve_dico(fichier, dico_fdp)
+
+       
     def chargement_source(self):
         self.val_etape +=1
         self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir de quoi on parle !')
@@ -202,14 +263,14 @@ class fen_chargement(QtWidgets.QWidget):
             pj1["Information"] = {'Nation':"Noobland"}
             pj1["Caractéristique"] = dico_carac
             pj1["Compétence"] = dico_comp
-
+            
             dico_pj={}
             dico_pj["system"] = "7seaV2"
             dico_pj["pj1"] = pj1
             dico_pj["pj2"] = pj1
             dico_pj["pj2"]["Nom"] = "Noob2"
         
-            sauve_dico()
+            sauve_dico(fichier, dico_pj)
 
 class mafen(QtWidgets.QMainWindow):
     def __init__(self,mon_style):
@@ -220,6 +281,9 @@ class mafen(QtWidgets.QMainWindow):
         self.ma_fenetre_principal(mon_style)
         self.ma_barre_de_menu()
         self.mon_pied_de_page()
+
+        #pour memoriser les widget à effacer
+        self.liste_wid_page = []
 
         # Création des layouts et affectation Widget
         coord = (0,0)
@@ -259,7 +323,10 @@ class mafen(QtWidgets.QMainWindow):
         global dico_pj
         self.main_Menu = self.menuBar()
         self.PJ_Menu = self.main_Menu.addMenu("PJ")
-        self.PJ_Menu.addAction("Gestion Pjs")
+        self.act_gest_pj = QtWidgets.QAction('Gestion Pjs')
+        self.act_gest_pj.triggered.connect(self.affiche_page_gestionpj)
+        self.PJ_Menu.addAction(self.act_gest_pj)
+
         self.list_action = []
         i = 0
         for key in dico_pj:
@@ -383,6 +450,22 @@ class mafen(QtWidgets.QMainWindow):
                         monglayout.addWidget(self.liste_wid_page[i],r,c+2)
                         i += 1
                         c += 3
+                    elif isinstance(mon_pj[categorie][key], list):
+                        valcompt = mon_pj[categorie][key][0]
+                        maxcompt = mon_pj[categorie][key][1]
+                         
+                        self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(valcompt)+' / '+str(maxcompt)))
+                        monglayout.addWidget(self.liste_wid_page[i],r,c)
+                        i += 1
+                        self.liste_wid_page.append(QtWidgets.QPushButton('+'))
+                        self.liste_wid_page[i].clicked.connect(partial(self.plusmoinspj,(pj_voulu,categorie,key),1))
+                        monglayout.addWidget(self.liste_wid_page[i],r,c+1)
+                        i += 1
+                        self.liste_wid_page.append(QtWidgets.QPushButton('-'))
+                        self.liste_wid_page[i].clicked.connect(partial(self.plusmoinspj,(pj_voulu,categorie,key),-1))
+                        monglayout.addWidget(self.liste_wid_page[i],r,c+2)
+                        i += 1
+                        c += 3
                     else:
                         self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(mon_pj[categorie][key])))
                         monglayout.addWidget(self.liste_wid_page[i],r,c)
@@ -401,6 +484,7 @@ class mafen(QtWidgets.QMainWindow):
     def destruct_page(self):
         for wid in self.liste_wid_page:
             wid.deleteLater()
+        self.liste_wid_page = []
 
     def affiche_page_pj(self,txtpj):
         try:
@@ -413,17 +497,34 @@ class mafen(QtWidgets.QMainWindow):
         global dico_pj
         (quel_pj,quel_categorie,quel_key) = datas
         valeur = dico_pj[quel_pj][quel_categorie][quel_key]
-        valeur += increment
-        if valeur >= 0:
-            dico_pj[quel_pj][quel_categorie][quel_key] = valeur
-            self.affiche_page_pj(quel_pj)
-            sauve_dico()
+        if isinstance(valeur, list):
+            valeur = dico_pj[quel_pj][quel_categorie][quel_key][0]
+            cmptmax = dico_pj[quel_pj][quel_categorie][quel_key][1]
+            valeur += increment
+            if valeur >= 0 and valeur <= cmptmax:
+                dico_pj[quel_pj][quel_categorie][quel_key] = [valeur,cmptmax]
+                self.affiche_page_pj(quel_pj)
+                sauve_dico('source.json',dico_pj)
+        else:
+            valeur += increment
+            if valeur >= 0:
+                dico_pj[quel_pj][quel_categorie][quel_key] = valeur
+                self.affiche_page_pj(quel_pj)
+                sauve_dico('source.json',dico_pj)
 
     def edittextpj(self, datas):
+        global dico_pj
         self.demande_texte = QtWidgets.QDialog(parent = self)
         self.demande_texte.setWindowTitle('Saisissez votre texte')
         monVlayout = QtWidgets.QVBoxLayout(self.demande_texte)
         champ_saisi = QtWidgets.QLineEdit(self.demande_texte)
+        try:
+            (pj_voulue,categorie,key) = datas
+            champ_saisi.setText(dico_pj[pj_voulue][categorie][key])
+        except:
+            (pj_voulue,categorie) = datas
+            champ_saisi.setText(dico_pj[pj_voulue][categorie])
+
         monVlayout.addWidget(champ_saisi)
         bouton_ok = QtWidgets.QPushButton('ok')
         bouton_ok.clicked.connect(partial(self.modiftext, champ_saisi, self.demande_texte, datas))
@@ -447,9 +548,136 @@ class mafen(QtWidgets.QMainWindow):
                 dico_pj[quel_pj][quel_categorie] = mavaleur
                 self.affiche_page_pj(quel_pj)
                 self.actualise_menu()
-            sauve_dico()
+            sauve_dico('source.json',dico_pj)
             mondial.close()
 
+    def affiche_page_gestionpj(self):
+        try:
+            self.destruct_page()
+        except:
+            pass
+        self.page_gestionpj(self.fendroite)
+
+    def page_gestionpj(self,layout):
+        global dico_pj
+        
+        preliste_pj = []
+        max_id = 0 
+        #Mise en forme de la liste des pj pour affichage
+        #recuperation du system en cours
+        for pj in dico_pj:
+            if pj == 'system':
+                mon_system = dico_pj['system']
+            else:
+                idpj = int(pj.split('pj')[1])
+                if max_id < idpj:
+                    max_id = idpj
+                nompj = dico_pj[pj]['Nom']
+                preliste_pj.append([idpj,nompj])
+        #on viens recuperer les id (pjX) et le nom du perso
+        #l'ID max rencontré
+        liste_pj = []
+        for poubelle in range(0,max_id+1):
+            poubelle = poubelle 
+            liste_pj.append('')
+        #on créer une liste avec max_id element vide
+
+        #que l'on rempli avec les noms des pjs
+        for pj in preliste_pj:
+            liste_pj[pj[0]] = pj[1]
+        #on repasse sur la liste pour ressortir le premier élément vide
+        #comme nouvelle ID
+        unId = 0
+        new_id = 0
+        for pj in liste_pj:
+            if unId == 0:
+                pass
+            else:
+                if pj == '':
+                    new_id = unId
+                    break
+            unId += 1
+        if new_id == 0:
+            new_id = max_id +1
+        #maintenant on va pouvoir faire la liste des pj actuel (pour suppression)
+        #et proposer un nouvel ID
+
+        i = 0
+        
+        self.liste_wid_page.append(QtWidgets.QLabel('Listes des personnages :'))
+        layout.addWidget(self.liste_wid_page[i])
+        i += 1
+
+        num_pj = 0
+        
+        for elem in liste_pj:
+            if elem != '':
+                monHLayout = QtWidgets.QHBoxLayout()
+                self.liste_wid_page.append(monHLayout)
+                layout.addLayout(monHLayout)
+                i += 1
+
+                self.liste_wid_page.append(QtWidgets.QLabel(' '))
+                monHLayout.addWidget(self.liste_wid_page[i])
+                i += 1
+
+
+                self.liste_wid_page.append(QtWidgets.QLabel('PJ'+str(num_pj)+' : ' +elem))
+                monHLayout.addWidget(self.liste_wid_page[i])
+                i += 1
+
+                self.liste_wid_page.append(QtWidgets.QPushButton('x'))
+                self.liste_wid_page[i].clicked.connect(partial(self.supprpj,'pj'+str(num_pj)))
+                monHLayout.addWidget(self.liste_wid_page[i])
+                i += 1
+                self.liste_wid_page.append(QtWidgets.QLabel(' '))
+                monHLayout.addWidget(self.liste_wid_page[i])
+                i += 1
+
+                
+            num_pj += 1
+
+        monHLayout = QtWidgets.QHBoxLayout()
+        self.liste_wid_page.append(monHLayout)
+        layout.addLayout(monHLayout)
+        i += 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel(' '))
+        monHLayout.addWidget(self.liste_wid_page[i])
+        i += 1
+        
+        self.liste_wid_page.append(QtWidgets.QPushButton('New'))
+        self.liste_wid_page[i].clicked.connect(partial(self.nouveau_pj,new_id))
+        monHLayout.addWidget(self.liste_wid_page[i])
+        i += 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel(' '))
+        monHLayout.addWidget(self.liste_wid_page[i])
+        i += 1
+
+
+    def supprpj(self,txtpj):
+        global dico_pj
+        del dico_pj[txtpj]
+
+        sauve_dico('source.json', dico_pj)
+        self.destruct_page()
+        self.actualise_menu()
+        self.affiche_page_gestionpj()
+
+
+    def nouveau_pj(self,new_id):
+        print(new_id)
+        global dico_fdp
+        global dico_pj
+        if new_id > 0:
+            Newpj = dico_fdp['7seaV2']
+            dico_pj['pj'+str(new_id)]=Newpj
+            sauve_dico('source.json', dico_pj)
+
+            self.destruct_page()
+            self.actualise_menu()
+            self.affiche_page_gestionpj()
     
 
 
