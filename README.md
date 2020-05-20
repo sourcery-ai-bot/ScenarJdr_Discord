@@ -24,6 +24,7 @@ Rôle du Bot:
 --------------------------------------------------------------------------
 
 Etat actuel:
+
 A)Interface
 - Fenetre de chargement des fichiers nécéssaires (sources, style et config et fdp)
 - Fentre principal en dark theme
