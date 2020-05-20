@@ -41,7 +41,8 @@ def printlog(monmsg):
         print(monmsg)
 
 def sauve_dico(mon_fichier, dico):
-    """Enregistre en JSON UTF8 dans mon_fichier le dictionnaire dico, repertoire courant est utilisé en base
+    """Enregistre en JSON UTF8 dans mon_fichier le dictionnaire dico,
+       repertoire courant est utilisé en base
 
     Args:
         mon_fichier (str): Nom du fichier
@@ -61,7 +62,8 @@ app = QtWidgets.QApplication(sys.argv)
 # déclaration fenetre GUI
 #-------------------------------------------------------------
 class FenChargement(QtWidgets.QWidget):
-    """Fenetre de chargement qui correspond à la lecture et test des fichiers necessaire de l'application
+    """Fenetre de chargement qui correspond à la lecture et test des fichiers
+       necessaire de l'application
 
     Args:
         QtWidgets (QWidget): rien de nécéssaire 
@@ -107,7 +109,8 @@ class FenChargement(QtWidgets.QWidget):
            utilise un style vide en cas d'absence
         """
         self.val_etape +=1
-        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Le faire avec style')
+        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Le faire avec\
+             style')
         time.sleep(ralentisseur)
         self.update()
         global mon_style
@@ -139,7 +142,8 @@ class FenChargement(QtWidgets.QWidget):
         A défaut, en créer un avec valeur neutre
         """
         self.val_etape +=1
-        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir communiquer')
+        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir \
+            communiquer')
         self.update()
         time.sleep(ralentisseur)
         global dico_conf
@@ -175,13 +179,15 @@ class FenChargement(QtWidgets.QWidget):
             #-------------------------------------------------------------
             # si pas de config alors on en créer un
             #-------------------------------------------------------------
-            token = "Your secret token here / ton token d'application secret ici"
+            token = "Your secret token here / ton token d'application secret\
+                 ici"
             id_chan = "L'ID du canal ici "
             log = True
             tpspool = 4
             champ_par_ligne = 3
 
-            printlog("Echec de lecture du fichier config, création automatique")
+            printlog("Echec de lecture du fichier config, création \
+                automatique")
             
             dico_conf= {}
             dico_conf["token"] = token
@@ -200,7 +206,8 @@ class FenChargement(QtWidgets.QWidget):
         A défaut créer un fichier type fdp.json
         """
         self.val_etape +=1
-        self.lbl_etape.setText('Etape '+ str(self.val_etape)+": s'en feuiller précisément")
+        self.lbl_etape.setText('Etape '+ str(self.val_etape)+": s'en feuiller\
+             précisément")
         self.update()
         time.sleep(ralentisseur)
 
@@ -229,7 +236,7 @@ class FenChargement(QtWidgets.QWidget):
             #-------------------------------------------------------------
             dico_compt = { "Spirale de la mort": [0,20] }
 
-            dico_comp= { "Art de la guerre": 0,"Athlétisme": 0,\
+            dico_comp = { "Art de la guerre": 0,"Athlétisme": 0,\
         "Bagarre": 0, "Convaincre": 0, \
         "Dérober": 0, "Dissimulation": 0, \
         "Empathie": 0, "Equitation": 0, \
@@ -261,7 +268,8 @@ class FenChargement(QtWidgets.QWidget):
         avec valeurs neutres
         """
         self.val_etape +=1
-        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir de quoi on parle !')
+        self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir de\
+             quoi on parle !')
         self.update()
         time.sleep(ralentisseur)
 
@@ -280,7 +288,8 @@ class FenChargement(QtWidgets.QWidget):
             self.update()
             time.sleep(ralentisseur) 
 
-            self.lbl_etape.setText('Etape '+ str(self.val_etape)+": Savoir s'arreter")
+            self.lbl_etape.setText('Etape '+ str(self.val_etape)+": Savoir\
+                 s'arreter")
             self.update()    
             time.sleep(ralentisseur)
           
@@ -390,7 +399,8 @@ class MaFen(QtWidgets.QMainWindow):
                 printlog(str(self.mon_bot))          
 
     def lancebotof(self): 
-        """envoi un messafe au bot pour qu'il s'arrete et mettent fin au thread
+        """envoi un messafe au bot pour qu'il s'arrete et mettent fin au
+             thread
         """
         global action
 
@@ -407,7 +417,8 @@ class MaFen(QtWidgets.QMainWindow):
         
         self.PJ_Menu = self.main_Menu.addMenu("PJ")
         self.act_gest_pj = QtWidgets.QAction('Gestion Pjs')
-        self.act_gest_pj.triggered.connect(partial(self.affiche_pageX,'gest pj'))
+        self.act_gest_pj.triggered.connect(partial(self.affiche_pageX,\
+            'gest pj'))
         self.PJ_Menu.addAction(self.act_gest_pj)
         self.list_action = []
         i = 0
@@ -430,7 +441,8 @@ class MaFen(QtWidgets.QMainWindow):
         self.Aide_Menu = self.main_Menu.addMenu("Options")
         self.act_config = QtWidgets.QAction("Configuration")
         self.Aide_Menu.addAction(self.act_config)
-        self.act_config.triggered.connect(partial(self.affiche_pageX,'config'))
+        self.act_config.triggered.connect(partial(self.affiche_pageX,\
+            'config'))
         self.act_A_propos = QtWidgets.QAction('A propos')
         self.act_A_propos.triggered.connect(self.dial_a_propos)
         self.Aide_Menu.addAction(self.act_A_propos)
@@ -450,8 +462,10 @@ class MaFen(QtWidgets.QMainWindow):
         self.list_action = []
         for key in dico_pj:
             if key != 'system':
-                self.list_action.append(QtWidgets.QAction('&'+str(dico_pj[key]['Nom'])))
-                self.list_action[i].triggered.connect(partial(self.affiche_pageX,'pj',key))
+                self.list_action.append(QtWidgets.QAction('&'+\
+                    str(dico_pj[key]['Nom'])))
+                self.list_action[i].triggered.connect(partial(\
+                    self.affiche_pageX,'pj',key))
                 self.PJ_Menu.addAction(self.list_action[i])
                 i += 1    
         
@@ -484,7 +498,8 @@ class MaFen(QtWidgets.QMainWindow):
         self.liste_wid_page = []
     
     def affiche_pageX(self,quelpage,complement=''):
-        """affiche_pageX : detruit la page actuelle pour afficher la page demandée
+        """affiche_pageX : detruit la page actuelle pour afficher
+         la page demandée
 
         Args:
             quelpage ([type]): [description]
@@ -504,7 +519,8 @@ class MaFen(QtWidgets.QMainWindow):
             print("doesn't work 404")
 
     def page_pj(self, layout, pj_voulu):
-        """affiche la page de détaille du joueur pj_voulu dans la fenetre layout
+        """affiche la page de détaille du joueur pj_voulu dans la fenetre
+        layout
 
         Args:
             layout (QtWidgets.QVBoxLayout: Layout où seront affiché les objets
@@ -530,12 +546,14 @@ class MaFen(QtWidgets.QMainWindow):
             nbkey = 0
             c = 0
             if categorie == 'Nom':
-                self.liste_wid_page.append(QtWidgets.QLabel('Nom complet: ' + mon_pj['Nom']))
+                self.liste_wid_page.append(QtWidgets.QLabel('Nom complet: '\
+                     + mon_pj['Nom']))
             
                 monglayout.addWidget(self.liste_wid_page[i],r,c)
                 i += 1
                 self.liste_wid_page.append(QtWidgets.QPushButton('Edit'))
-                self.liste_wid_page[i].clicked.connect(partial(self.edittextpj,(pj_voulu,categorie)))
+                self.liste_wid_page[i].clicked.connect(partial(\
+                    self.edittextpj,(pj_voulu,categorie)))
         
                 monglayout.addWidget(self.liste_wid_page[i],r,c+1)
                 i += 1
@@ -559,19 +577,22 @@ class MaFen(QtWidgets.QMainWindow):
                         nbkey = 1
 
                     if  isinstance(mon_pj[categorie][key],int):
-                        self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(mon_pj[categorie][key])))
+                        self.liste_wid_page.append(QtWidgets.QLabel(key +\
+                            ' : '+ str(mon_pj[categorie][key])))
                         monglayout.addWidget(self.liste_wid_page[i],r,c)
                      
                         i += 1
 
                         self.liste_wid_page.append(QtWidgets.QPushButton('+'))
-                        self.liste_wid_page[i].clicked.connect(partial(self.plusmoinspj,(pj_voulu,categorie,key),1))
+                        self.liste_wid_page[i].clicked.connect(partial(\
+                            self.plusmoinspj,(pj_voulu,categorie,key),1))
                         monglayout.addWidget(self.liste_wid_page[i],r,c+1)
                  
                         i += 1
 
                         self.liste_wid_page.append(QtWidgets.QPushButton('-'))
-                        self.liste_wid_page[i].clicked.connect(partial(self.plusmoinspj,(pj_voulu,categorie,key),-1))
+                        self.liste_wid_page[i].clicked.connect(partial(\
+                            self.plusmoinspj,(pj_voulu,categorie,key),-1))
                         monglayout.addWidget(self.liste_wid_page[i],r,c+2)
                     
                         i += 1
@@ -591,17 +612,20 @@ class MaFen(QtWidgets.QMainWindow):
                         valcompt = mon_pj[categorie][key][0]
                         maxcompt = mon_pj[categorie][key][1]
                          
-                        self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(valcompt)+' / '+str(maxcompt)))
+                        self.liste_wid_page.append(QtWidgets.QLabel(key +\
+                            ' : '+ str(valcompt)+' / '+str(maxcompt)))
                         monglayout.addWidget(self.liste_wid_page[i],r,c)
                     
                         i += 1
                         self.liste_wid_page.append(QtWidgets.QPushButton('+'))
-                        self.liste_wid_page[i].clicked.connect(partial(self.plusmoinspj,(pj_voulu,categorie,key),1))
+                        self.liste_wid_page[i].clicked.connect(partial(\
+                            self.plusmoinspj,(pj_voulu,categorie,key),1))
                         monglayout.addWidget(self.liste_wid_page[i],r,c+1)
                    
                         i += 1
                         self.liste_wid_page.append(QtWidgets.QPushButton('-'))
-                        self.liste_wid_page[i].clicked.connect(partial(self.plusmoinspj,(pj_voulu,categorie,key),-1))
+                        self.liste_wid_page[i].clicked.connect(partial(\
+                            self.plusmoinspj,(pj_voulu,categorie,key),-1))
                         monglayout.addWidget(self.liste_wid_page[i],r,c+2)
                    
                         i += 1
@@ -616,12 +640,15 @@ class MaFen(QtWidgets.QMainWindow):
                         i += 1
                         r += 1
                     else:
-                        self.liste_wid_page.append(QtWidgets.QLabel(key +' : '+ str(mon_pj[categorie][key])))
+                        self.liste_wid_page.append(QtWidgets.QLabel(key +\
+                            ' : '+ str(mon_pj[categorie][key])))
                         monglayout.addWidget(self.liste_wid_page[i],r,c)
                      
                         i += 1
-                        self.liste_wid_page.append(QtWidgets.QPushButton('Edit'))
-                        self.liste_wid_page[i].clicked.connect(partial(self.edittextpj,(pj_voulu,categorie,key)))
+                        self.liste_wid_page.append(QtWidgets.QPushButton(\
+                            'Edit'))
+                        self.liste_wid_page[i].clicked.connect(partial(\
+                            self.edittextpj,(pj_voulu,categorie,key)))
                         monglayout.addWidget(self.liste_wid_page[i],r,c+1)
                       
                         i += 1
@@ -647,7 +674,9 @@ class MaFen(QtWidgets.QMainWindow):
         sauvegarde le dico_pj dans le fichier source.json
 
         Args:
-            datas (tuple(str,str,str)): nom code du pj, premier niveau de clé dictionnaire, deuxième niveau de clé
+            datas (tuple(str,str,str)): nom code du pj, premier niveau de 
+                                        clé dictionnaire, deuxième niveau 
+                                        de clé
             increment (int): typiquement +1 ou -1 
         """
         global dico_pj
@@ -689,19 +718,24 @@ class MaFen(QtWidgets.QMainWindow):
 
         monVlayout.addWidget(champ_saisi)
         bouton_ok = QtWidgets.QPushButton('ok')
-        bouton_ok.clicked.connect(partial(self.modiftext, champ_saisi, self.demande_texte, datas))
+        bouton_ok.clicked.connect(partial(self.modiftext, champ_saisi,\
+             self.demande_texte, datas))
         monVlayout.addWidget(bouton_ok)
         
         self.demande_texte.setLayout(monVlayout)
         self.demande_texte.show()
 
     def modiftext(self, champ,mondial, datas):
-        """Vérifie que champs non vide et sauvegarde la valeur, pour ensuite fermer le Qdialog
+        """Vérifie que champs non vide et sauvegarde la valeur, pour
+         ensuite fermer le Qdialog
 
         Args:
-            champ (QtWidgets.QLineEdit): QlineEdit contenant la valeur à sauvegarder
-            mondial (QtWidgets.QDialog): fenetre de Qdialog qui appellent la fonction pour fermeture
-            datas (tuple(str,str,str)): nom code du pj, premier niveau de clé dictionnaire, deuxième niveau de clé
+            champ (QtWidgets.QLineEdit): QlineEdit contenant la valeur à
+                                         sauvegarder
+            mondial (QtWidgets.QDialog): fenetre de Qdialog qui appellent la 
+                                         fonction pour fermeture
+            datas (tuple(str,str,str)): nom code du pj, premier niveau de clé
+                                        dictionnaire, deuxième niveau de clé
         """
         global dico_pj
         mavaleur = str(champ.text()) 
@@ -764,12 +798,13 @@ class MaFen(QtWidgets.QMainWindow):
             unId += 1
         if new_id == 0:
             new_id = max_id +1
-        #maintenant on va pouvoir faire la liste des pj actuel (pour suppression)
-        #et proposer un nouvel ID
+        #maintenant on va pouvoir faire la liste des pj actuel (pour 
+        #suppression) et proposer un nouvel ID
 
         i = 0
         
-        self.liste_wid_page.append(QtWidgets.QLabel('Liste des personnages :'))
+        self.liste_wid_page.append(QtWidgets.QLabel(\
+            'Liste des personnages :'))
         layout.addWidget(self.liste_wid_page[i])
         i += 1
 
@@ -787,12 +822,14 @@ class MaFen(QtWidgets.QMainWindow):
                 i += 1
 
 
-                self.liste_wid_page.append(QtWidgets.QLabel('PJ'+str(num_pj)+' : ' +elem))
+                self.liste_wid_page.append(QtWidgets.QLabel('PJ'+\
+                    str(num_pj)+' : ' +elem))
                 monHLayout.addWidget(self.liste_wid_page[i])
                 i += 1
 
                 self.liste_wid_page.append(QtWidgets.QPushButton('x'))
-                self.liste_wid_page[i].clicked.connect(partial(self.supprpj,'pj'+str(num_pj)))
+                self.liste_wid_page[i].clicked.connect(partial(self.supprpj,\
+                    'pj'+str(num_pj)))
                 monHLayout.addWidget(self.liste_wid_page[i])
                 i += 1
                 self.liste_wid_page.append(QtWidgets.QLabel(' '))
@@ -812,7 +849,8 @@ class MaFen(QtWidgets.QMainWindow):
         i += 1
         
         self.liste_wid_page.append(QtWidgets.QPushButton('New'))
-        self.liste_wid_page[i].clicked.connect(partial(self.nouveau_pj,new_id))
+        self.liste_wid_page[i].clicked.connect(partial(\
+            self.nouveau_pj,new_id))
         monHLayout.addWidget(self.liste_wid_page[i])
         i += 1
 
@@ -945,7 +983,51 @@ class MaFen(QtWidgets.QMainWindow):
         layout.addLayout(monglayout)
 
     def edit_param_config(self,param):
-        print(param)
+        global dico_conf
+        self.demande_texte = QtWidgets.QDialog(parent = self)
+        self.demande_texte.setWindowTitle('Saisissez votre texte')
+        monVlayout = QtWidgets.QVBoxLayout(self.demande_texte)
+        champ_saisi = QtWidgets.QLineEdit(self.demande_texte)
+        champ_saisi.setText(str(dico_conf[param]))
+
+        monVlayout.addWidget(champ_saisi)
+        bouton_ok = QtWidgets.QPushButton('ok')
+        bouton_ok.clicked.connect(partial(self.modiftextconf, champ_saisi, self.demande_texte, param))
+        monVlayout.addWidget(bouton_ok)
+        
+        self.demande_texte.setLayout(monVlayout)
+        self.demande_texte.show()
+
+    def modiftextconf(self, champ,mondial, param):
+        """Vérifie que champs non vide et sauvegarde la valeur, pour ensuite
+         fermer le Qdialog
+
+        Args:
+            champ (QtWidgets.QLineEdit): QlineEdit contenant la valeur à 
+                                         sauvegarder
+            mondial (QtWidgets.QDialog): fenetre de Qdialog qui appellent la 
+                                         fonction pour fermeture
+            datas (tuple(str,str,str)): nom code du pj, premier niveau de clé 
+                                        dictionnaire, deuxième niveau de clé
+        """
+        global dico_conf
+        mavaleur = str(champ.text()) 
+        if mavaleur != '':
+            if param == 'token' or param == 'id_chan':               
+                dico_conf[param] = mavaleur
+
+            elif param == 'log':
+                if mavaleur == 'False':
+                    mavaleur = ''
+                dico_conf[param] = bool(mavaleur)
+            else:
+                dico_conf[param] = int(mavaleur)
+
+            sauve_dico('config.json',dico_conf)
+            self.affiche_pageX('config')
+            mondial.close()
+
+    
 
 #-------------------------------------------------------------
 # On regarde où on est
@@ -968,7 +1050,8 @@ affectation = {} #pour mémoriser qui à pris un pj
 #lance nb D10 si explose est valide, chaque 10 rajoute un D10 suplémentaire, (max 20) 
 #retourne les résultats sous forme de liste
 def brouette(nb, explose):
-    """Lance 'nb' D10 si 'explose' est valide, chaque 10 rajoute un D10 suplémentaire, (max 20) 
+    """Lance 'nb' D10 si 'explose' est valide, chaque 10 rajoute un D10 
+    suplémentaire, (max 20) 
     retourne les résultats sous forme de liste
 
     Args:
@@ -992,7 +1075,7 @@ def brouette(nb, explose):
     return liste_de
 
 #Calcul le nombre de mises d'une liste de dé 10
-def nbmise (liste_de, difficulte):
+def nbmise(liste_de, difficulte):
     """Calcul le nombre de mises d'une liste de dé 10
 
     Args:
@@ -1000,22 +1083,27 @@ def nbmise (liste_de, difficulte):
         difficulte (int): valeur de la mise a cosntituer avec les dés
 
     Returns:
-        [tuple(int, str)]:(Nombre de mise constitué, détails des mises constituées)
+        [tuple(int, str)]:(Nombre de mise constitué, détails des mises 
+                          constituées)
     """
     liste_de.sort() #on tri du plus petit au plus grand
     liste_mise = [] 
     
     nb_de_mise = 0
     while len(liste_de)>0: #tant qu'il y a des dés...
-        plusfort = int (liste_de.pop()) #on prend le plus fort des dé en fin qe liste
-        mise_encours = plusfort #on créer la somme de la premiere mise (pas forcement complete)
+        plusfort = int (liste_de.pop()) #on prend le plus fort des dé en fin\
+                                        #de liste
+        mise_encours = plusfort #on créer la somme de la premiere mise (pas 
+                                      #forcement complete)
         mise = [] # on crée la liste de dé de la mise pour vérification
         mise.append(plusfort) # on y rajoute le premier dé
        
-        while mise_encours < difficulte and len(liste_de)>0: #tant que la mise n'atteint pas son seuil
-            # et tant qu'il y a des dé
+        while mise_encours < difficulte and len(liste_de)>0: #tant que la mise
+                                                     # n'atteint pas son seuil
+                                                     # et tant qu'il y a des dé
             plusfaible = int(liste_de.pop(0)) # on recupere le plus faible
-            mise_encours += plusfaible #on cumul pour connaitre la valeur de la mise encours
+            mise_encours += plusfaible #on cumul pour connaitre la valeur de 
+                                       #la mise encours
             mise.append(plusfaible) #on rajoute a la liste de verif
 
 
@@ -1075,7 +1163,8 @@ async def on_message(message):
         recup = dico_pj.get(decortique[1])
         if recup != None:
             affectation[str(message.author)[0:-5]] = recup['Nom']
-            monmessage = str(message.author)[0:-5] + ', vous êtes maintenant : ' + recup['Nom']
+            monmessage = str(message.author)[0:-5] + \
+                ', vous êtes maintenant : ' + recup['Nom']
             await message.channel.send(monmessage)
 
     elif message.content.startswith('$hello'):
@@ -1086,9 +1175,11 @@ async def on_message(message):
         await message.channel.send('''
         Pour lancer un set de 7 dés il faut taper '$n 7' sans les guillemets
         - $n pour un jet normal (sans relance des 10)
-        - $nd pour un jet normal (sans relance des 10) avec des groupes de 15 pour 1 mise
+        - $nd pour un jet normal (sans relance des 10) avec des groupes'''+\
+        ''' de 15 pour 1 mise
         - $ne pour un jet explosif (avec 1D en plus pour chaque 10)
-        - $ned pour un jet explosif (avec 1D en plus pour chaque 10) avec des groupes de 15 pour 1 mise
+        - $ned pour un jet explosif (avec 1D en plus pour chaque 10) avec'''+\
+        ''' des groupes de 15 pour 1 mise
         Pour agir avec les PJ:
         - $pj pour voir la liste des pj
         - $give pj1 recevoir un pj
@@ -1126,7 +1217,8 @@ async def on_message(message):
             if recupnom == None:
                 recupnom = str(message.author)[0:-5]
                 
-            resultat = recupnom + ', vous avez ' + str(nb) + ' mise(s), ( | '+texte+')'
+            resultat = recupnom + ', vous avez ' + str(nb) + \
+                ' mise(s), ( | '+texte+')'
             
             await message.channel.send(resultat)
 
@@ -1150,7 +1242,7 @@ async def on_message(message):
             monmessage = str(dico_pj['pj'+num_pj])
             await message.channel.send(monmessage)
         else:
-            await message.channel.send('''$pj d'accord mais $pj combien  ?''' )
+            await message.channel.send('''$pj d'accord mais $pj combien  ?''')
         
 @client.event
 async def my_background_task():
@@ -1169,7 +1261,8 @@ async def my_background_task():
 
     liste_blague = ['''Staying alive, staying a live. Ah, ah ah....''',\
                     '''Inserez une blague ici''',\
-                    '''De ceux qui n'ont rien à dire, les meilleurs sont ceux qui se taisent''']
+                    '''De ceux qui n'ont rien à dire, les meilleurs sont'''+\
+                    ''' ceux qui se taisent''']
 
     liste_intro=['''Je viens d'arriver, je ne vous ai pas manqué ?''',\
             '''Poypoy ! Pour rappel on me parle avec des $ ''',\
