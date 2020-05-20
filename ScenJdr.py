@@ -26,7 +26,6 @@ dico_fdp = {}
 champ_par_ligne = 3
 taille_wid = 20
 
-
 #-------------------------------------------------------------
 # fonction de suivi
 #-------------------------------------------------------------
@@ -54,7 +53,6 @@ def sauve_dico(mon_fichier, dico):
     with open(cheminfichier , 'w', encoding='utf-8') as source:
                 json.dump(dico,source, indent = 4)
  
-
 #--------------------------------------------------------------------------
 
 app = QtWidgets.QApplication(sys.argv)
@@ -362,16 +360,13 @@ class mafen(QtWidgets.QMainWindow):
         
         self.mes_layouts()   
         self.page_pj(self.fendroite,'pj1')
-
-
-        
+     
     def test(self):
         """demande gentiment au bot de dire test
         """
         global action
         if action == (0,0):
             action = (1,'test')
-
 
     def lanceboton(self):
         """lance le thread du bot
@@ -412,14 +407,14 @@ class mafen(QtWidgets.QMainWindow):
         
         self.PJ_Menu = self.main_Menu.addMenu("PJ")
         self.act_gest_pj = QtWidgets.QAction('Gestion Pjs')
-        self.act_gest_pj.triggered.connect(self.affiche_page_gestionpj)
+        self.act_gest_pj.triggered.connect(partial(self.affiche_pageX,'gest pj'))
         self.PJ_Menu.addAction(self.act_gest_pj)
         self.list_action = []
         i = 0
         for key in dico_pj:
             if key != 'system':
                 self.list_action.append(QtWidgets.QAction('&'+str(dico_pj[key]['Nom'])))
-                self.list_action[i].triggered.connect(partial(self.affiche_page_pj,key))
+                self.list_action[i].triggered.connect(partial(self.affiche_pageX,'pj',key))
                 self.PJ_Menu.addAction(self.list_action[i])
                 i += 1
                 
@@ -432,13 +427,10 @@ class mafen(QtWidgets.QMainWindow):
         self.act_A_Botof.triggered.connect(self.lancebotof)
         self.Bot_Menu.addAction(self.act_A_Botof)
 
-
-
         self.Aide_Menu = self.main_Menu.addMenu("Options")
         self.act_config = QtWidgets.QAction("Configuration")
         self.Aide_Menu.addAction(self.act_config)
-        self.act_config.triggered.connect(self.affiche_page_config)
-        #self.Aide_Menu.addAction("Aide")
+        self.act_config.triggered.connect(partial(self.affiche_pageX,'config'))
         self.act_A_propos = QtWidgets.QAction('A propos')
         self.act_A_propos.triggered.connect(self.dial_a_propos)
         self.Aide_Menu.addAction(self.act_A_propos)
@@ -459,7 +451,7 @@ class mafen(QtWidgets.QMainWindow):
         for key in dico_pj:
             if key != 'system':
                 self.list_action.append(QtWidgets.QAction('&'+str(dico_pj[key]['Nom'])))
-                self.list_action[i].triggered.connect(partial(self.affiche_page_pj,key))
+                self.list_action[i].triggered.connect(partial(self.affiche_pageX,'pj',key))
                 self.PJ_Menu.addAction(self.list_action[i])
                 i += 1    
         
@@ -491,6 +483,25 @@ class mafen(QtWidgets.QMainWindow):
             wid.deleteLater()
         self.liste_wid_page = []
     
+    def affiche_pageX(self,quelpage,complement=''):
+        """affiche_pageX : detruit la page actuelle pour afficher la page demandée
+
+        Args:
+            quelpage ([type]): [description]
+            complement ([type]): [description]
+        """
+        try:
+            self.destruct_page()
+        except:
+            pass
+        if quelpage == 'pj':
+            self.page_pj(self.fendroite,complement)
+        elif quelpage == 'gest pj':
+            self.page_gestionpj(self.fendroite)
+        elif quelpage == 'config':
+            self.page_config(self.fendroite)
+        else:
+            print("doesn't work 404")
 
     def page_pj(self, layout, pj_voulu):
         """affiche la page de détaille du joueur pj_voulu dans la fenetre layout
@@ -629,19 +640,7 @@ class mafen(QtWidgets.QMainWindow):
             self.liste_wid_page[i].setObjectName('maligne')
             
             layout.addWidget(self.liste_wid_page[i])
-            i += 1
-            
-    def affiche_page_pj(self,txtpj):
-        """detruit les widgets en cours pour afficher la page pj du pj txtpj
-
-        Args:
-            txtpj (str): Nom code du personnage ex pj1
-        """
-        try:
-            self.destruct_page()
-        except:
-            pass
-        self.page_pj(self.fendroite,txtpj)
+            i += 1   
     
     def plusmoinspj(self,datas,increment):
         """ajoute la valeur de l'incrément à la datas
@@ -660,13 +659,13 @@ class mafen(QtWidgets.QMainWindow):
             valeur += increment
             if valeur >= 0 and valeur <= cmptmax:
                 dico_pj[quel_pj][quel_categorie][quel_key] = [valeur,cmptmax]
-                self.affiche_page_pj(quel_pj)
+                self.affiche_pageX('pj',quel_pj)
                 sauve_dico('source.json',dico_pj)
         else:
             valeur += increment
             if valeur >= 0:
                 dico_pj[quel_pj][quel_categorie][quel_key] = valeur
-                self.affiche_page_pj(quel_pj)
+                self.affiche_pageX('pj',quel_pj)
                 sauve_dico('source.json',dico_pj)
 
     def edittextpj(self, datas):
@@ -711,24 +710,15 @@ class mafen(QtWidgets.QMainWindow):
                 (quel_pj,quel_categorie,quel_key) = datas
                 
                 dico_pj[quel_pj][quel_categorie][quel_key] = mavaleur
-                self.affiche_page_pj(quel_pj)
+                self.affiche_pageX('pj',quel_pj)
                 
             except:
                 (quel_pj,quel_categorie) = datas
                 dico_pj[quel_pj][quel_categorie] = mavaleur
-                self.affiche_page_pj(quel_pj)
+                self.affiche_pageX('pj',quel_pj)
                 self.actualise_menu()
             sauve_dico('source.json',dico_pj)
             mondial.close()
-
-    def affiche_page_gestionpj(self):
-        """detruit la page actuelle et affiche la page de gestion de PJ
-        """
-        try:
-            self.destruct_page()
-        except:
-            pass
-        self.page_gestionpj(self.fendroite)
 
     def page_gestionpj(self,layout):
         """ initialise la page gestion des pjs
@@ -839,7 +829,7 @@ class mafen(QtWidgets.QMainWindow):
         sauve_dico('source.json', dico_pj)
         self.destruct_page()
         self.actualise_menu()
-        self.affiche_page_gestionpj()
+        self.affiche_pageX('gest pj')
 
     def nouveau_pj(self,new_id):
         """Créer un nouveau pj en prennant le model dans dico_fdp
@@ -857,7 +847,7 @@ class mafen(QtWidgets.QMainWindow):
 
             self.destruct_page()
             self.actualise_menu()
-            self.affiche_page_gestionpj()
+            self.affiche_pageX('gest pj')
     
     def dial_a_propos(self):
         """affiche le Qdialog du a propos
@@ -871,14 +861,6 @@ class mafen(QtWidgets.QMainWindow):
         description = QtWidgets.QLabel('Réalisé par Pierre Nunez')
         monVlayout.addWidget(description)
         self.demande_texte.show()
-
-    def affiche_page_config(self):
-        """detruit la page actuelle et affiche la page config"""
-        try:
-            self.destruct_page()
-        except:
-            pass
-        self.page_config(self.fendroite)
 
     def page_config(self,layout):
         """initialise la page de configuration
@@ -945,7 +927,9 @@ class mafen(QtWidgets.QMainWindow):
         r += 1
 
         layout.addLayout(monglayout)
-            
+
+
+
 #-------------------------------------------------------------
 # On regarde où on est
 #-------------------------------------------------------------
@@ -1241,8 +1225,6 @@ class class1(Thread):
         
         printlog('testnfin')
         
-    
-
 fen = mafen(mon_style)
 fen.show()
 app.exec_()
