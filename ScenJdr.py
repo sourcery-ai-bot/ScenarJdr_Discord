@@ -32,14 +32,24 @@ taille_wid = 20
 #-------------------------------------------------------------
 
 def printlog(monmsg):
+    """Affiche monmsg par un print si la variable global log est True
+
+    Args:
+        monmsg (str): Message à afficher si global log est True
+    """
     global log
     if log:
         print(monmsg)
 
 def sauve_dico(mon_fichier, dico):
+    """Enregistre en JSON UTF8 dans mon_fichier le dictionnaire dico, repertoire courant est utilisé en base
+
+    Args:
+        mon_fichier (str): Nom du fichier
+        dico (dict): Dictionnaire complet à enregistrer dans mon_fichier
+    """
     chemin = os.path.dirname(__file__)
-    fichier = mon_fichier
-    cheminfichier = os.path.join(chemin,fichier)
+    cheminfichier = os.path.join(chemin,mon_fichier)
 
     with open(cheminfichier , 'w', encoding='utf-8') as source:
                 json.dump(dico,source, indent = 4)
@@ -53,7 +63,17 @@ app = QtWidgets.QApplication(sys.argv)
 # déclaration fenetre GUI
 #-------------------------------------------------------------
 class fen_chargement(QtWidgets.QWidget):
+    """Fenetre de chargement qui correspond à la lecture et test des fichiers necessaire de l'application
+
+    Args:
+        QtWidgets (QWidget): rien de nécéssaire 
+    """
     def __init__(self,app):
+        """Initialisation de la fenetre de chargement
+
+        Args:
+            app (QtWidgets.QApplication(sys.argv)): QtWidgets.Qapplication 
+        """
         super(fen_chargement,self).__init__()
 
         self.setWindowTitle("Loadiiiiiiinnnng")
@@ -84,8 +104,10 @@ class fen_chargement(QtWidgets.QWidget):
 
         self.close()
         
-    
     def chargement_style(self):
+        """Chargement du fichier style.css
+           utilise un style vide en cas d'absence
+        """
         self.val_etape +=1
         self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Le faire avec style')
         time.sleep(ralentisseur)
@@ -107,6 +129,17 @@ class fen_chargement(QtWidgets.QWidget):
             mon_style = ''  
 
     def chargement_config(self):
+        """ Chargement du fichier config.json
+        défini les variables globales suivante:
+        global dico_conf
+        global token
+        global id_chan
+        global log
+        global tpspool
+        global champ_par_ligne
+
+        A défaut, en créer un avec valeur neutre
+        """
         self.val_etape +=1
         self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir communiquer')
         self.update()
@@ -163,6 +196,11 @@ class fen_chargement(QtWidgets.QWidget):
                 json.dump(dico_conf,source, indent = 4)
             
     def chargement_fdp(self):
+        """Chargement du fichier fdp.json
+        défini la variable globale dico_fdp
+
+        A défaut créer un fichier type fdp.json
+        """
         self.val_etape +=1
         self.lbl_etape.setText('Etape '+ str(self.val_etape)+": s'en feuiller précisément")
         self.update()
@@ -218,9 +256,12 @@ class fen_chargement(QtWidgets.QWidget):
             dico_fdp["7seaV2"] = systemD
             
             sauve_dico(fichier, dico_fdp)
-
-       
+     
     def chargement_source(self):
+        """Charge le fichier source.json
+        A défaut créer le fichier source.json
+        avec valeurs neutres
+        """
         self.val_etape +=1
         self.lbl_etape.setText('Etape '+ str(self.val_etape)+': Savoir de quoi on parle !')
         self.update()
@@ -273,21 +314,40 @@ class fen_chargement(QtWidgets.QWidget):
         
             sauve_dico(fichier, dico_pj)
 
-
 class QHLine(QtWidgets.QFrame):
-       def __init__(self):
+    """OQobjet pour faire des lignes Horizontales
+
+    Args:
+        QtWidgets (QtWidgets.QFrame):RAS
+    """
+    def __init__(self):
            super(QHLine, self).__init__()
            self.setFrameShape(QtWidgets.QFrame.HLine)
            self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
 class QVLine(QtWidgets.QFrame):
-       def __init__(self):
-           super(QVLine, self).__init__()
-           self.setFrameShape(QtWidgets.QFrame.VLine)
-           self.setFrameShadow(QtWidgets.QFrame.Sunken)
+    """OQobjet pour faire des lignes Verticales
+
+    Args:
+        QtWidgets (QtWidgets.QFrame):RAS
+    """
+    def __init__(self):
+        super(QVLine, self).__init__()
+        self.setFrameShape(QtWidgets.QFrame.VLine)
+        self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
 class mafen(QtWidgets.QMainWindow):
+    """Fenetre principale de l'application ]
+
+    Args:
+        QtWidgets (QtWidgets.QMainWindow): RAS
+    """
     def __init__(self,mon_style):
+        """Initialise la fenetre en chargeant le style 'mon_style'
+
+        Args:
+            mon_style (lecture d'un fichier CSS): Feuille de style css
+        """
         super(mafen, self).__init__()
         self.etat_bot = False
         
@@ -303,17 +363,25 @@ class mafen(QtWidgets.QMainWindow):
         self.mes_layouts()   
         self.page_pj(self.fendroite,'pj1')
 
+
+        
     def test(self):
+        """demande gentiment au bot de dire test
+        """
         global action
         if action == (0,0):
             action = (1,'test')
-            
+
+
     def lanceboton(self):
+        """lance le thread du bot
+        """
+
         global action
         if self.etat_bot == False:
             self.etat_bot = True
             self.mon_bot = class1()
-            print(str(self.mon_bot))
+            printlog(str(self.mon_bot))
 
             try:
                 self.mon_bot.start()
@@ -321,12 +389,14 @@ class mafen(QtWidgets.QMainWindow):
                 global action
                 action = (2, self)
             except Exception as pourquoi:
-                print('ZeVeuxPo :' + str(pourquoi))
+                printlog('ZeVeuxPo :' + str(pourquoi))
         else:
                 self.lbl_etat_bot.setText("Bot déjà actif")
-                print(str(self.mon_bot))          
+                printlog(str(self.mon_bot))          
 
     def lancebotof(self): 
+        """envoi un messafe au bot pour qu'il s'arrete et mettent fin au thread
+        """
         global action
 
         #self.mon_bot.quit()
@@ -334,6 +404,8 @@ class mafen(QtWidgets.QMainWindow):
             action = (3,self)
             
     def ma_barre_de_menu(self):
+        """Définis la barre de menu
+        """
         global dico_pj
         self.main_Menu = self.menuBar()
         self.Camp_Menu = self.main_Menu.addMenu("Campagne")
@@ -351,14 +423,6 @@ class mafen(QtWidgets.QMainWindow):
                 self.PJ_Menu.addAction(self.list_action[i])
                 i += 1
                 
-            
-        self.Aide_Menu = self.main_Menu.addMenu("Options")
-        self.Aide_Menu.addAction("Configuration")
-        #self.Aide_Menu.addAction("Aide")
-        self.act_A_propos = QtWidgets.QAction('A propos')
-        self.act_A_propos.triggered.connect(self.dial_a_propos)
-        self.Aide_Menu.addAction(self.act_A_propos)
-
         self.Bot_Menu = self.main_Menu.addMenu("BOT")
         self.act_A_Boton = QtWidgets.QAction('Bot On')
         self.act_A_Boton.triggered.connect(self.lanceboton)
@@ -367,8 +431,21 @@ class mafen(QtWidgets.QMainWindow):
         self.act_A_Botof = QtWidgets.QAction('Bot Off')
         self.act_A_Botof.triggered.connect(self.lancebotof)
         self.Bot_Menu.addAction(self.act_A_Botof)
-        
+
+
+
+        self.Aide_Menu = self.main_Menu.addMenu("Options")
+        self.act_config = QtWidgets.QAction("Configuration")
+        self.Aide_Menu.addAction(self.act_config)
+        self.act_config.triggered.connect(self.affiche_page_config)
+        #self.Aide_Menu.addAction("Aide")
+        self.act_A_propos = QtWidgets.QAction('A propos')
+        self.act_A_propos.triggered.connect(self.dial_a_propos)
+        self.Aide_Menu.addAction(self.act_A_propos)
+    
     def actualise_menu(self):
+        """actualise le menu en fonction de la liste de PJ
+        """
         global dico_pj
         try:
 
@@ -387,50 +464,47 @@ class mafen(QtWidgets.QMainWindow):
                 i += 1    
         
     def ma_fenetre_principal(self, monstyle):
+        """ définit la taille de base de l'application
+        et applique le style
+        """
         self.resize(700,500)
         self.setWindowTitle('Enjoy your campagne')
         self.setStyleSheet(mon_style)  
 
     def mes_layouts(self):
+        """définit les layouts de l'application
+        """
         self.mon_scroll = QtWidgets.QScrollArea()
-
-        self.main_widget = QtWidgets.QWidget()
-        
-        self.grille = QtWidgets.QVBoxLayout(self.main_widget) #exist en Hlayout et Vlayout
-        
-
-
+        self.main_widget = QtWidgets.QWidget()    
+        self.grille = QtWidgets.QVBoxLayout(self.main_widget)
         self.main_widget.setLayout(self.grille)
-
         self.mon_scroll.setWidget( self.main_widget)
-        #self.mon_scroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        #self.mon_scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.mon_scroll.setWidgetResizable(True)
-            
-
+        self.mon_scroll.setWidgetResizable(True)   
         self.setCentralWidget(self.mon_scroll)
-        
-        self.maligne = QHLine()
-        self.maligne.setObjectName('maligne')
-        self.grille.addWidget(self.maligne)
-
         self.fendroite = QtWidgets.QVBoxLayout()
         self.grille.addLayout(self.fendroite)
-      
-        
+         
     def destruct_page(self):
+        """détuit tout les Widgets de la liste
+        """
         for wid in self.liste_wid_page:
             wid.deleteLater()
         self.liste_wid_page = []
+    
 
     def page_pj(self, layout, pj_voulu):
+        """affiche la page de détaille du joueur pj_voulu dans la fenetre layout
+
+        Args:
+            layout (QtWidgets.QVBoxLayout: Layout où seront affiché les objets
+            pj_voulu (str): Nom code du joueur ex: 'pj1' 
+        """
         global dico_pj
         global champ_par_ligne
         global taille_wid
         self.liste_wid_page = []
         i= 0
         mon_pj = dico_pj[pj_voulu]
-        print(str(len(mon_pj)))
         for categorie in mon_pj:
             self.liste_wid_page.append(QtWidgets.QLabel(categorie))
        
@@ -464,7 +538,7 @@ class mafen(QtWidgets.QMainWindow):
                 key_par_colone = total_key // champ_par_ligne
                 if total_key % champ_par_ligne != 0 :
                     key_par_colone += 1
-                print(key_par_colone)
+         
                 for key in mon_pj[categorie]:
                     nbkey += 1
                     
@@ -558,6 +632,11 @@ class mafen(QtWidgets.QMainWindow):
             i += 1
             
     def affiche_page_pj(self,txtpj):
+        """detruit les widgets en cours pour afficher la page pj du pj txtpj
+
+        Args:
+            txtpj (str): Nom code du personnage ex pj1
+        """
         try:
             self.destruct_page()
         except:
@@ -565,6 +644,13 @@ class mafen(QtWidgets.QMainWindow):
         self.page_pj(self.fendroite,txtpj)
     
     def plusmoinspj(self,datas,increment):
+        """ajoute la valeur de l'incrément à la datas
+        sauvegarde le dico_pj dans le fichier source.json
+
+        Args:
+            datas (tuple(str,str,str)): nom code du pj, premier niveau de clé dictionnaire, deuxième niveau de clé
+            increment (int): typiquement +1 ou -1 
+        """
         global dico_pj
         (quel_pj,quel_categorie,quel_key) = datas
         valeur = dico_pj[quel_pj][quel_categorie][quel_key]
@@ -584,6 +670,12 @@ class mafen(QtWidgets.QMainWindow):
                 sauve_dico('source.json',dico_pj)
 
     def edittextpj(self, datas):
+        """Ouvre un Qdialog, pour demander la saisie d'un texte
+        et relie le bouton de cofirmation à la fonction self.modiftext()
+
+        Args:
+            datas (tuple(str,str,str)): nom code du pj, premier niveau de clé dictionnaire, deuxième niveau de clé
+        """
         global dico_pj
         self.demande_texte = QtWidgets.QDialog(parent = self)
         self.demande_texte.setWindowTitle('Saisissez votre texte')
@@ -605,6 +697,13 @@ class mafen(QtWidgets.QMainWindow):
         self.demande_texte.show()
 
     def modiftext(self, champ,mondial, datas):
+        """Vérifie que champs non vide et sauvegarde la valeur, pour ensuite fermer le Qdialog
+
+        Args:
+            champ (QtWidgets.QLineEdit): QlineEdit contenant la valeur à sauvegarder
+            mondial (QtWidgets.QDialog): fenetre de Qdialog qui appellent la fonction pour fermeture
+            datas (tuple(str,str,str)): nom code du pj, premier niveau de clé dictionnaire, deuxième niveau de clé
+        """
         global dico_pj
         mavaleur = str(champ.text()) 
         if mavaleur != '':
@@ -623,6 +722,8 @@ class mafen(QtWidgets.QMainWindow):
             mondial.close()
 
     def affiche_page_gestionpj(self):
+        """detruit la page actuelle et affiche la page de gestion de PJ
+        """
         try:
             self.destruct_page()
         except:
@@ -630,6 +731,8 @@ class mafen(QtWidgets.QMainWindow):
         self.page_gestionpj(self.fendroite)
 
     def page_gestionpj(self,layout):
+        """ initialise la page gestion des pjs
+        """
         global dico_pj
         
         preliste_pj = []
@@ -676,7 +779,7 @@ class mafen(QtWidgets.QMainWindow):
 
         i = 0
         
-        self.liste_wid_page.append(QtWidgets.QLabel('Listes des personnages :'))
+        self.liste_wid_page.append(QtWidgets.QLabel('Liste des personnages :'))
         layout.addWidget(self.liste_wid_page[i])
         i += 1
 
@@ -728,6 +831,8 @@ class mafen(QtWidgets.QMainWindow):
         i += 1
 
     def supprpj(self,txtpj):
+        """supprime le pj txtpj, et sauvegarde le fichier source
+        """
         global dico_pj
         del dico_pj[txtpj]
 
@@ -737,7 +842,12 @@ class mafen(QtWidgets.QMainWindow):
         self.affiche_page_gestionpj()
 
     def nouveau_pj(self,new_id):
-        print(new_id)
+        """Créer un nouveau pj en prennant le model dans dico_fdp
+
+        Args:
+            new_id (int): numéro du code de pj à créer
+        """
+      
         global dico_fdp
         global dico_pj
         if new_id > 0:
@@ -750,6 +860,8 @@ class mafen(QtWidgets.QMainWindow):
             self.affiche_page_gestionpj()
     
     def dial_a_propos(self):
+        """affiche le Qdialog du a propos
+        """
         
         self.demande_texte = QtWidgets.QDialog(parent = self)
         self.demande_texte.setWindowTitle('CampDisc V1.0 - Béta')
@@ -760,16 +872,85 @@ class mafen(QtWidgets.QMainWindow):
         monVlayout.addWidget(description)
         self.demande_texte.show()
 
+    def affiche_page_config(self):
+        """detruit la page actuelle et affiche la page config"""
+        try:
+            self.destruct_page()
+        except:
+            pass
+        self.page_config(self.fendroite)
 
+    def page_config(self,layout):
+        """initialise la page de configuration
+
+        Args:
+            layout (QtWidgets.QGridLayout): QGridLayout hebergeant la page
+        """
+        global dico_conf
+        self.liste_wid_page = [] 
+        i = 0
+        r=0
+        c=0
+
+        monglayout = QtWidgets.QGridLayout()
+        self.liste_wid_page.append(monglayout)
+        i += 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel(''))
+        monglayout.addWidget(self.liste_wid_page[i],r,c)
+        i += 1
+        r += 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel('Paramètres du Bot'))
+        monglayout.addWidget(self.liste_wid_page[i],r,c, columnspan = 2)
+        i += 1
+        
+        self.liste_wid_page.append(QtWidgets.QLabel(''))
+        monglayout.addWidget(self.liste_wid_page[i],r,c+2)
+        i += 1
+        r += 1
+        c = 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel('Token du Bot : ' + str(dico_conf['token'])))
+        monglayout.addWidget(self.liste_wid_page[i],r,c)
+        i += 1
+        r += 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel('ID du canal Discord : ' + str(dico_conf['id_chan'])))
+        monglayout.addWidget(self.liste_wid_page[i],r,c)
+        i += 1
+        r += 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel('Réactivité du bot : ' + str(dico_conf['tps_pool'])))
+        monglayout.addWidget(self.liste_wid_page[i],r,c)
+        i += 1
+        r += 1
+
+
+        c = 0
+        self.liste_wid_page.append(QtWidgets.QLabel("Paramètres d'apparence"))
+        monglayout.addWidget(self.liste_wid_page[i],r,c, columnspan = 2)
+        i += 1
+        r += 1
+        c = 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel('Nombre de colonnes: ' + str(dico_conf['champ_par_ligne'])))
+        monglayout.addWidget(self.liste_wid_page[i],r,c)
+        i += 1
+        r += 1
+
+        self.liste_wid_page.append(QtWidgets.QLabel(''))
+        monglayout.addWidget(self.liste_wid_page[i],r,c)
+        i += 1
+        r += 1
+
+        layout.addLayout(monglayout)
+            
 #-------------------------------------------------------------
 # On regarde où on est
 #-------------------------------------------------------------
 
-
-#test fenetre chargement
-
 chargeeeeer = fen_chargement(app)
-
 
 #-------------------------------------------------------------
 # création du client discord
@@ -778,7 +959,7 @@ client = discord.Client()
 
 justearrived = True # pour générer un message à la connexion
 affectation = {} #pour mémoriser qui à pris un pj
-j = 0
+# = 0
 #-------------------------------------------------------------
 # fonction outils pour bot discord
 #-------------------------------------------------------------
@@ -786,6 +967,16 @@ j = 0
 #lance nb D10 si explose est valide, chaque 10 rajoute un D10 suplémentaire, (max 20) 
 #retourne les résultats sous forme de liste
 def brouette(nb, explose):
+    """Lance 'nb' D10 si 'explose' est valide, chaque 10 rajoute un D10 suplémentaire, (max 20) 
+    retourne les résultats sous forme de liste
+
+    Args:
+        nb (int): nombre de dé lancé
+        explose (bool): Valide ou non si un dé explose ou non
+
+    Returns:
+        [list]: liste de resultat des dé
+    """
     nb = nbtot = min(10,nb)
     liste_de = []
             
@@ -801,6 +992,15 @@ def brouette(nb, explose):
 
 #Calcul le nombre de mises d'une liste de dé 10
 def nbmise (liste_de, difficulte):
+    """Calcul le nombre de mises d'une liste de dé 10
+
+    Args:
+        liste_de (liste): liste de resultat de 1 à 10
+        difficulte (int): valeur de la mise a cosntituer avec les dés
+
+    Returns:
+        [tuple(int, str)]:(Nombre de mise constitué, détails des mises constituées)
+    """
     liste_de.sort() #on tri du plus petit au plus grand
     liste_mise = [] 
     
@@ -847,11 +1047,21 @@ def nbmise (liste_de, difficulte):
 
 @client.event
 async def on_ready():
+    """action effectuée quand le bot est loggué
+    """
     monmsg = ('We have logged in as {0.user}'.format(client))
     printlog(monmsg)
 
 @client.event
 async def on_message(message):
+    """Action du bot effectuée sur apparition de message dans le canal
+
+    Args:
+        message (voir module discord): [description]
+
+    Returns:
+        Rien : Queue de Chique, Nada, Neant 
+    """
     global justearrived
     if message.author == client.user:
         return   # pour ne pas se répondre à soi-même
@@ -943,6 +1153,9 @@ async def on_message(message):
         
 @client.event
 async def my_background_task():
+    """Tache de fond:
+    Message de bienvenue, Message de toujours vivant
+    """ 
     global client
     await client.wait_until_ready()
     global id_chan
@@ -1003,25 +1216,33 @@ async def my_background_task():
 #-------------------------------------------------------------
 
 class class1(Thread):
+    """Class1 permet de créer et lancer un thread
+
+    Args:
+        Thread (Thread du module thread): voir module Thread
+    """
 
     def __init__(self):
+        """initialise le thread
+        """
         Thread.__init__(self) 
-        print('init class1')
+        printlog('init thread')
 
     def run(self):
-        print('debut run')
+        """Affecte la tache de fond au client discord
+        et lance la connexion du client
+        """
+        printlog('debut run')
         global client
         client.loop.create_task(my_background_task())
         global dico_conf
         codesecret = dico_conf['token']
         client.run(codesecret)
         
-        print('testnfin')
+        printlog('testnfin')
         
     
 
 fen = mafen(mon_style)
 fen.show()
 app.exec_()
-
-printlog('end of line')
