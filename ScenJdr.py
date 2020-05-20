@@ -60,7 +60,7 @@ app = QtWidgets.QApplication(sys.argv)
 #-------------------------------------------------------------
 # déclaration fenetre GUI
 #-------------------------------------------------------------
-class fen_chargement(QtWidgets.QWidget):
+class FenChargement(QtWidgets.QWidget):
     """Fenetre de chargement qui correspond à la lecture et test des fichiers necessaire de l'application
 
     Args:
@@ -72,7 +72,7 @@ class fen_chargement(QtWidgets.QWidget):
         Args:
             app (QtWidgets.QApplication(sys.argv)): QtWidgets.Qapplication 
         """
-        super(fen_chargement,self).__init__()
+        super(FenChargement,self).__init__()
 
         self.setWindowTitle("Loadiiiiiiinnnng")
         self.resize(300,100)
@@ -334,7 +334,7 @@ class QVLine(QtWidgets.QFrame):
         self.setFrameShape(QtWidgets.QFrame.VLine)
         self.setFrameShadow(QtWidgets.QFrame.Sunken)
 
-class mafen(QtWidgets.QMainWindow):
+class MaFen(QtWidgets.QMainWindow):
     """Fenetre principale de l'application ]
 
     Args:
@@ -346,7 +346,7 @@ class mafen(QtWidgets.QMainWindow):
         Args:
             mon_style (lecture d'un fichier CSS): Feuille de style css
         """
-        super(mafen, self).__init__()
+        super(MaFen, self).__init__()
         self.etat_bot = False
         
         # création des Widgets
@@ -375,7 +375,7 @@ class mafen(QtWidgets.QMainWindow):
         global action
         if self.etat_bot == False:
             self.etat_bot = True
-            self.mon_bot = class1()
+            self.mon_bot = Class1()
             printlog(str(self.mon_bot))
 
             try:
@@ -886,6 +886,7 @@ class mafen(QtWidgets.QMainWindow):
         self.liste_wid_page.append(QtWidgets.QLabel('Paramètres du Bot'))
         monglayout.addWidget(self.liste_wid_page[i],r,c, columnspan = 2)
         i += 1
+
         
         self.liste_wid_page.append(QtWidgets.QLabel(''))
         monglayout.addWidget(self.liste_wid_page[i],r,c+2)
@@ -896,18 +897,29 @@ class mafen(QtWidgets.QMainWindow):
         self.liste_wid_page.append(QtWidgets.QLabel('Token du Bot : ' + str(dico_conf['token'])))
         monglayout.addWidget(self.liste_wid_page[i],r,c)
         i += 1
+        self.liste_wid_page.append(QtWidgets.QPushButton('Edit'))
+        self.liste_wid_page[i].clicked.connect(partial(self.edit_param_config,'token'))
+        monglayout.addWidget(self.liste_wid_page[i],r,c+1)
+        i += 1
         r += 1
 
         self.liste_wid_page.append(QtWidgets.QLabel('ID du canal Discord : ' + str(dico_conf['id_chan'])))
         monglayout.addWidget(self.liste_wid_page[i],r,c)
+        i += 1
+        self.liste_wid_page.append(QtWidgets.QPushButton('Edit'))
+        self.liste_wid_page[i].clicked.connect(partial(self.edit_param_config,'id_chan'))
+        monglayout.addWidget(self.liste_wid_page[i],r,c+1)
         i += 1
         r += 1
 
         self.liste_wid_page.append(QtWidgets.QLabel('Réactivité du bot : ' + str(dico_conf['tps_pool'])))
         monglayout.addWidget(self.liste_wid_page[i],r,c)
         i += 1
+        self.liste_wid_page.append(QtWidgets.QPushButton('Edit'))
+        self.liste_wid_page[i].clicked.connect(partial(self.edit_param_config,'tps_pool'))
+        monglayout.addWidget(self.liste_wid_page[i],r,c+1)
+        i += 1
         r += 1
-
 
         c = 0
         self.liste_wid_page.append(QtWidgets.QLabel("Paramètres d'apparence"))
@@ -919,6 +931,10 @@ class mafen(QtWidgets.QMainWindow):
         self.liste_wid_page.append(QtWidgets.QLabel('Nombre de colonnes: ' + str(dico_conf['champ_par_ligne'])))
         monglayout.addWidget(self.liste_wid_page[i],r,c)
         i += 1
+        self.liste_wid_page.append(QtWidgets.QPushButton('Edit'))
+        self.liste_wid_page[i].clicked.connect(partial(self.edit_param_config,'champ_par_ligne'))
+        monglayout.addWidget(self.liste_wid_page[i],r,c+1)
+        i += 1
         r += 1
 
         self.liste_wid_page.append(QtWidgets.QLabel(''))
@@ -928,13 +944,14 @@ class mafen(QtWidgets.QMainWindow):
 
         layout.addLayout(monglayout)
 
-
+    def edit_param_config(self,param):
+        print(param)
 
 #-------------------------------------------------------------
 # On regarde où on est
 #-------------------------------------------------------------
 
-chargeeeeer = fen_chargement(app)
+chargeeeeer = FenChargement(app)
 
 #-------------------------------------------------------------
 # création du client discord
@@ -1199,7 +1216,7 @@ async def my_background_task():
 # création de class pour thread
 #-------------------------------------------------------------
 
-class class1(Thread):
+class Class1(Thread):
     """Class1 permet de créer et lancer un thread
 
     Args:
@@ -1225,6 +1242,6 @@ class class1(Thread):
         
         printlog('testnfin')
         
-fen = mafen(mon_style)
+fen = MaFen(mon_style)
 fen.show()
 app.exec_()
