@@ -465,7 +465,14 @@ class MaFen(QtWidgets.QMainWindow):
         self.act_A_propos = QtWidgets.QAction('A propos')
         self.act_A_propos.triggered.connect(self.dial_a_propos)
         self.Aide_Menu.addAction(self.act_A_propos)
+
+        self.act_Aide = QtWidgets.QAction('?')
+        self.act_Aide.triggered.connect(self.affiche_aide)
+        self.Aide_Menu.addAction(self.act_Aide)
     
+    def affiche_aide(self):
+        os.startfile("readme.pdf")
+
     def actualise_menu(self):
         """actualise le menu en fonction de la liste de PJ
         """
@@ -715,6 +722,10 @@ class MaFen(QtWidgets.QMainWindow):
                 dico_pj[quel_pj][quel_categorie][quel_key] = valeur
                 self.affiche_pageX('pj',quel_pj)
                 sauve_dico('source.json',dico_pj)
+        
+        (com_etat, com_parler, com_maj_pj, com_maj_conf) = lecture_com()
+        com_maj_pj = 1
+        ecriture_com( com_etat , com_parler, com_maj_pj, com_maj_conf)
 
     def edittextpj(self, datas):
         """Ouvre un Qdialog, pour demander la saisie d'un texte
@@ -771,8 +782,11 @@ class MaFen(QtWidgets.QMainWindow):
                 self.affiche_pageX('pj',quel_pj)
                 self.actualise_menu()
             sauve_dico('source.json',dico_pj)
+            (com_etat, com_parler, com_maj_pj, com_maj_conf) = lecture_com()
+            com_maj_pj = 1
+            ecriture_com( com_etat , com_parler, com_maj_pj, com_maj_conf)
             mondial.close()
-
+        
     def page_gestionpj(self,layout):
         """ initialise la page gestion des pjs
         """
