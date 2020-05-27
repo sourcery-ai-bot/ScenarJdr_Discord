@@ -9,9 +9,8 @@ import time
 from functools import partial
 from PySide2 import QtWidgets, QtGui, QtCore
 
-import discord #module discord
-import asyncio #gestion d'évènenment asynchrone pour discord
-from threading import Thread # pour programmation parallèle
+import subprocess
+
 
 #-------------------------------------------------------------
 # Variable "globale" bouh pas bien ! Je sais
@@ -25,9 +24,9 @@ dico_pj = {}
 dico_fdp = {}
 champ_par_ligne = 3
 taille_wid = 20
-
+dico_action = {}
 #-------------------------------------------------------------
-# fonction de suivi
+# fonction outil
 #-------------------------------------------------------------
 
 def printlog(monmsg):
@@ -52,8 +51,49 @@ def sauve_dico(mon_fichier, dico):
     cheminfichier = os.path.join(chemin,mon_fichier)
 
     with open(cheminfichier , 'w', encoding='utf-8') as source:
-                json.dump(dico,source, indent = 4)
- 
+                json.dump(dico,source, indent = 4) 
+
+def lecture_com():
+
+    printlog('lecture com')
+    chemin = os.path.dirname(__file__)
+    config = 'com.json'
+
+    cheminconfig = os.path.join(chemin, config)
+    try:       
+        with open(cheminconfig, "r") as source:
+            dico_action = json.load(source)
+        com_etat = dico_action["etat"]
+        com_parler = dico_action["parler"]
+        com_maj_pj = dico_action["maj_pj"]
+        com_maj_conf = dico_action["maj_conf"]
+        
+    except Exception as mes:
+
+        printlog('problème lecture ordre : '+ str(mes))
+
+    finally:
+        print((com_etat, com_parler, com_maj_pj, com_maj_conf))
+        return (com_etat, com_parler, com_maj_pj, com_maj_conf)
+
+def ecriture_com( com_etat, com_parler, com_maj_pj, com_maj_conf):
+
+    chemin = os.path.dirname(__file__)
+    config = 'com.json'
+    cheminconfig = os.path.join(chemin, config)
+    dico_action = {}
+    dico_action["etat"] = com_etat
+    dico_action["parler"] = com_parler
+    dico_action["maj_pj"] = com_maj_pj
+    dico_action["maj_conf"] = com_maj_conf
+
+    try:
+        with open(cheminconfig, "w") as source:
+            json.dump(dico_action,source, indent = 4)
+    except:
+        printlog('échec écriture support de com')
+    
+
 #--------------------------------------------------------------------------
 
 app = QtWidgets.QApplication(sys.argv)
@@ -370,50 +410,29 @@ class MaFen(QtWidgets.QMainWindow):
         self.mes_layouts()   
         self.page_pj(self.fendroite,'pj1')
      
-    def test(self):
-        """demande gentiment au bot de dire test
-        """
-        global action
-        if action == (0,0):
-            action = (1,'test')
-
     def lanceboton(self):
         """lance le thread du bot
         """
-
-        global action
         if self.etat_bot == False:
             self.etat_bot = True
-            self.mon_bot = Class1()
-            printlog(str(self.mon_bot))
-
-            try:
-                self.mon_bot.start()
-                self.lbl_etat_bot.setText("On cherche le bot")
-                global action
-                action = (2, self)
-            except Exception as pourquoi:
-                printlog('ZeVeuxPo :' + str(pourquoi))
+            ecriture_com( 0 , "", 0, 0)
+            self.monbot = subprocess.Popen(['python.exe','onlybot.py'])
+            #self.monbot = subprocess.Popen('onlybot.exe')              
         else:
-                self.lbl_etat_bot.setText("Bot déjà actif")
-                printlog(str(self.mon_bot))          
-
+            printlog("Bot déjà actif")
+               
     def lancebotof(self): 
-        """envoi un messafe au bot pour qu'il s'arrete et mettent fin au
-             thread
-        """
-        global action
-
-        #self.mon_bot.quit()
-        if action == (0,0):
-            action = (3,self)
-            
+        (com_etat, com_parler, com_maj_pj, com_maj_conf) = lecture_com()
+        com_etat = 1
+        ecriture_com( com_etat , com_parler, com_maj_pj, com_maj_conf)
+        self.etat_bot = False
+                
     def ma_barre_de_menu(self):
         """Définis la barre de menu
         """
         global dico_pj
         self.main_Menu = self.menuBar()
-        self.Camp_Menu = self.main_Menu.addMenu("Campagne")
+        #self.Camp_Menu = self.main_Menu.addMenu("Campagne")
         
         self.PJ_Menu = self.main_Menu.addMenu("PJ")
         self.act_gest_pj = QtWidgets.QAction('Gestion Pjs')
@@ -1027,314 +1046,10 @@ class MaFen(QtWidgets.QMainWindow):
             self.affiche_pageX('config')
             mondial.close()
 
-    
-
-#-------------------------------------------------------------
-# On regarde où on est
-#-------------------------------------------------------------
+# ------------------------------------------------------------
 
 chargeeeeer = FenChargement(app)
-
-#-------------------------------------------------------------
-# création du client discord
-#-------------------------------------------------------------
-client = discord.Client()
-
-justearrived = True # pour générer un message à la connexion
-affectation = {} #pour mémoriser qui à pris un pj
-# = 0
-#-------------------------------------------------------------
-# fonction outils pour bot discord
-#-------------------------------------------------------------
-
-#lance nb D10 si explose est valide, chaque 10 rajoute un D10 suplémentaire, (max 20) 
-#retourne les résultats sous forme de liste
-def brouette(nb, explose):
-    """Lance 'nb' D10 si 'explose' est valide, chaque 10 rajoute un D10 
-    suplémentaire, (max 20) 
-    retourne les résultats sous forme de liste
-
-    Args:
-        nb (int): nombre de dé lancé
-        explose (bool): Valide ou non si un dé explose ou non
-
-    Returns:
-        [list]: liste de resultat des dé
-    """
-    nb = nbtot = min(10,nb)
-    liste_de = []
-            
-    while nb > 0:
-        nouveau_de = random.randint(1,10)
-        liste_de.append(nouveau_de)
-        if explose and nouveau_de == 10 and nbtot <=20 :
-            nb +=1  
-            nbtot +=1         
-        nb -= 1
-    
-    return liste_de
-
-#Calcul le nombre de mises d'une liste de dé 10
-def nbmise(liste_de, difficulte):
-    """Calcul le nombre de mises d'une liste de dé 10
-
-    Args:
-        liste_de (liste): liste de resultat de 1 à 10
-        difficulte (int): valeur de la mise a cosntituer avec les dés
-
-    Returns:
-        [tuple(int, str)]:(Nombre de mise constitué, détails des mises 
-                          constituées)
-    """
-    liste_de.sort() #on tri du plus petit au plus grand
-    liste_mise = [] 
-    
-    nb_de_mise = 0
-    while len(liste_de)>0: #tant qu'il y a des dés...
-        plusfort = int (liste_de.pop()) #on prend le plus fort des dé en fin\
-                                        #de liste
-        mise_encours = plusfort #on créer la somme de la premiere mise (pas 
-                                      #forcement complete)
-        mise = [] # on crée la liste de dé de la mise pour vérification
-        mise.append(plusfort) # on y rajoute le premier dé
        
-        while mise_encours < difficulte and len(liste_de)>0: #tant que la mise
-                                                     # n'atteint pas son seuil
-                                                     # et tant qu'il y a des dé
-            plusfaible = int(liste_de.pop(0)) # on recupere le plus faible
-            mise_encours += plusfaible #on cumul pour connaitre la valeur de 
-                                       #la mise encours
-            mise.append(plusfaible) #on rajoute a la liste de verif
-
-
-        if mise_encours >= difficulte:
-            mise.sort()
-            for de in mise:
-                if mise_encours - de >= difficulte:
-                    mise.remove(de)
-                    mise_encours -= de
-                    liste_de.append(de)
-                    liste_de.sort()
-
-            nb_de_mise += 1
-        
-        liste_mise.append(mise)
-        
-    texte_mise = ''
-    for mise in liste_mise:
-        for de in mise:
-            texte_mise += str(de) + ' '
-        texte_mise += '| '
-
-        
-
-    return nb_de_mise, texte_mise
-
-#-------------------------------------------------------------
-# fonction asyncio de bot discord
-#-------------------------------------------------------------
-
-@client.event
-async def on_ready():
-    """action effectuée quand le bot est loggué
-    """
-    monmsg = ('We have logged in as {0.user}'.format(client))
-    printlog(monmsg)
-
-@client.event
-async def on_message(message):
-    """Action du bot effectuée sur apparition de message dans le canal
-
-    Args:
-        message (voir module discord): [description]
-
-    Returns:
-        Rien : Queue de Chique, Nada, Neant 
-    """
-    global justearrived
-    if message.author == client.user:
-        return   # pour ne pas se répondre à soi-même
-    
-
-    if message.content.startswith('$give'):
-        requete = message.content
-        decortique = requete.split()
-
-        recup = dico_pj.get(decortique[1])
-        if recup != None:
-            affectation[str(message.author)[0:-5]] = recup['Nom']
-            monmessage = str(message.author)[0:-5] + \
-                ', vous êtes maintenant : ' + recup['Nom']
-            await message.channel.send(monmessage)
-
-    elif message.content.startswith('$hello'):
-        monmessage = 'Coucou pret à lancer vos dés !'
-        await message.channel.send(monmessage)
-
-    elif message.content.startswith('$help'):
-        await message.channel.send('''
-        Pour lancer un set de 7 dés il faut taper '$n 7' sans les guillemets
-        - $n pour un jet normal (sans relance des 10)
-        - $nd pour un jet normal (sans relance des 10) avec des groupes'''+\
-        ''' de 15 pour 1 mise
-        - $ne pour un jet explosif (avec 1D en plus pour chaque 10)
-        - $ned pour un jet explosif (avec 1D en plus pour chaque 10) avec'''+\
-        ''' des groupes de 15 pour 1 mise
-        Pour agir avec les PJ:
-        - $pj pour voir la liste des pj
-        - $give pj1 recevoir un pj
-        ''')
-        
-    elif message.content.startswith('$n'):
-        
-
-        requete = message.content
-        decortique = requete.split()
-
-
-        if decortique[0] == "$n":
-            explose = False
-            difficulte = 10
-        elif decortique[0] == "$nd":
-
-            explose = False
-            difficulte = 15
-        elif decortique[0] == "$ne":
-            explose = True
-            difficulte = 10
-        elif decortique[0] == "$ned":
-            explose = True
-            difficulte = 15
-
-
-        if len(decortique)>1:
-            
-            nb = int(decortique[1])
-            liste_de = brouette(nb, explose)
-
-            nb , texte = nbmise(liste_de, difficulte)
-            recupnom = affectation.get(str(message.author)[0:-5])
-            if recupnom == None:
-                recupnom = str(message.author)[0:-5]
-                
-            resultat = recupnom + ', vous avez ' + str(nb) + \
-                ' mise(s), ( | '+texte+')'
-            
-            await message.channel.send(resultat)
-
-        else:
-            await message.channel.send('pas compris !')
-
-    elif message.content.startswith('$pj'):
-        requete = message.content
-        if requete == '$pj':
-                    
-            texte_li_pj = 'liste des Pj: \n'
-            for key in dico_pj:
-                if key != "system":
-                    nompj = dico_pj[key]
-                    texte_li_pj += key + ' : ' + nompj['Nom'] + '\n'
-            await message.channel.send(texte_li_pj)
-
-        elif len(requete) > 3 :
-            num_pj = requete[3:len(requete)]
-            
-            monmessage = str(dico_pj['pj'+num_pj])
-            await message.channel.send(monmessage)
-        else:
-            await message.channel.send('''$pj d'accord mais $pj combien  ?''')
-        
-@client.event
-async def my_background_task():
-    """Tache de fond:
-    Message de bienvenue, Message de toujours vivant
-    """ 
-    global client
-    await client.wait_until_ready()
-    global id_chan
-    global action
-    global justearrived 
-    global tpspool
-    global dico_conf
-    channel = client.get_channel(int(id_chan))
-    await asyncio.sleep(tpspool) #
-
-    liste_blague = ['''Staying alive, staying a live. Ah, ah ah....''',\
-                    '''Inserez une blague ici''',\
-                    '''De ceux qui n'ont rien à dire, les meilleurs sont'''+\
-                    ''' ceux qui se taisent''']
-
-    liste_intro=['''Je viens d'arriver, je ne vous ai pas manqué ?''',\
-            '''Poypoy ! Pour rappel on me parle avec des $ ''',\
-            '''Faites $help pour apprendre à me parler''',\
-            '''Et Lanceur est arrivééé, sans se préceeeeerrrr...''']
-    if justearrived :
-
-       
-        random.shuffle(liste_intro)
-        await channel.send(liste_intro[0])
-        justearrived = False
-
-    count = 0
-    while not client.is_closed():
-        printlog("scrute : "+str(count))
-        count += 1
-        requete , corps = action
-        if requete == 1:
-            monmessage = str(corps)
-            await channel.send(monmessage)
-            action = (0,0)
-        elif requete == 2:
-            #corps.lbl_etat_bot.setText('Je suis actif!')
-            action = (0,0)
-        elif requete == 3:            
-            action = (0,0)
-            #corps.lbl_etat_bot.setText('Le bot fait Dodo')
-            corps.etat_bot = False
-            action = (0,0)
-            await client.close()
-            client = discord.Client()
-            
-            
-        elif count % int(600/tpspool) == 0:
-            
-            random.shuffle(liste_blague)
-            await channel.send(liste_blague[0])
-             
-        
-        
-        await asyncio.sleep(tpspool) # task runs every 60 seconds
-               
-#-------------------------------------------------------------
-# création de class pour thread
-#-------------------------------------------------------------
-
-class Class1(Thread):
-    """Class1 permet de créer et lancer un thread
-
-    Args:
-        Thread (Thread du module thread): voir module Thread
-    """
-
-    def __init__(self):
-        """initialise le thread
-        """
-        Thread.__init__(self) 
-        printlog('init thread')
-
-    def run(self):
-        """Affecte la tache de fond au client discord
-        et lance la connexion du client
-        """
-        printlog('debut run')
-        global client
-        client.loop.create_task(my_background_task())
-        global dico_conf
-        codesecret = dico_conf['token']
-        client.run(codesecret)
-        
-        printlog('testnfin')
-        
 fen = MaFen(mon_style)
 fen.show()
 app.exec_()
