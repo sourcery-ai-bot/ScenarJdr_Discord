@@ -81,11 +81,12 @@ def ecriture_com( com_etat, com_parler, com_maj_pj, com_maj_conf):
     chemin = os.path.dirname(__file__)
     config = 'com.json'
     cheminconfig = os.path.join(chemin, config)
-    dico_action = {}
-    dico_action["etat"] = com_etat
-    dico_action["parler"] = com_parler
-    dico_action["maj_pj"] = com_maj_pj
-    dico_action["maj_conf"] = com_maj_conf
+    dico_action = {
+        "etat": com_etat,
+        "parler": com_parler,
+        "maj_pj": com_maj_pj,
+        "maj_conf": com_maj_conf,
+    }
 
     try:
         with open(cheminconfig, "w") as source:
@@ -198,7 +199,7 @@ class FenChargement(QtWidgets.QWidget):
 
         cheminconfig = os.path.join(chemin, config)
         try:
-           
+
             with open(cheminconfig, "r") as source:
                 dico_conf = json.load(source)
             token = dico_conf["token"]
@@ -210,11 +211,11 @@ class FenChargement(QtWidgets.QWidget):
             if tpspool <2:
                 tpspool = 2
 
-            
+
             self.progressbar.setValue(self.val_etape)
             self.update()
             time.sleep(ralentisseur)
-            
+
         except:
             #-------------------------------------------------------------
             # si pas de config alors on en créer un
@@ -228,14 +229,15 @@ class FenChargement(QtWidgets.QWidget):
 
             printlog("Echec de lecture du fichier config, création \
                 automatique")
-            
-            dico_conf= {}
-            dico_conf["token"] = token
-            dico_conf["id_chan"] = id_chan
-            dico_conf["log"] = False
-            dico_conf["tps_pool"] = tpspool
-            dico_conf["champ_par_ligne"] = champ_par_ligne
-            
+
+            dico_conf = {
+                "token": token,
+                "id_chan": id_chan,
+                "log": False,
+                "tps_pool": tpspool,
+                "champ_par_ligne": champ_par_ligne,
+            }
+
             with open(cheminconfig, 'w') as source:
                 json.dump(dico_conf,source, indent = 4)
             
@@ -332,33 +334,31 @@ class FenChargement(QtWidgets.QWidget):
                  s'arreter")
             self.update()    
             time.sleep(ralentisseur)
-          
-            
+
+
         except:
             #-------------------------------------------------------------
             # si pas de fichier source alors on en créer un bidon
             #-------------------------------------------------------------
-            dico_comp = {}
-            dico_comp['Escrime']= 1
-            dico_comp['Parade']= 1
-            dico_carac={}
-            dico_carac["Puissance"]=1
-            dico_carac["Finesse"]=1
-            dico_carac["Esprit"]=1
-            dico_carac["Determination"]=1
-            dico_carac["Panache"]=1
-            pj1 = {}
-            pj1["Nom"] = "Noob"
-            pj1["Information"] = {'Nation':"Noobland"}
-            pj1["Caractéristique"] = dico_carac
-            pj1["Compétence"] = dico_comp
-            
-            dico_pj={}
-            dico_pj["system"] = "7seaV2"
-            dico_pj["pj1"] = pj1
-            dico_pj["pj2"] = pj1
+            dico_comp = {'Escrime': 1, 'Parade': 1}
+            dico_carac = {
+                "Puissance": 1,
+                "Finesse": 1,
+                "Esprit": 1,
+                "Determination": 1,
+                "Panache": 1,
+            }
+
+            pj1 = {
+                "Nom": "Noob",
+                "Information": {'Nation': "Noobland"},
+                "Caractéristique": dico_carac,
+                "Compétence": dico_comp,
+            }
+
+            dico_pj = {"system": "7seaV2", "pj1": pj1, "pj2": pj1}
             dico_pj["pj2"]["Nom"] = "Noob2"
-        
+
             sauve_dico(fichier, dico_pj)
 
 class QHLine(QtWidgets.QFrame):
@@ -1044,9 +1044,9 @@ class MaFen(QtWidgets.QMainWindow):
                                         dictionnaire, deuxième niveau de clé
         """
         global dico_conf
-        mavaleur = str(champ.text()) 
+        mavaleur = str(champ.text())
         if mavaleur != '':
-            if param == 'token' or param == 'id_chan':               
+            if param in ['token', 'id_chan']:               
                 dico_conf[param] = mavaleur
 
             elif param == 'log':

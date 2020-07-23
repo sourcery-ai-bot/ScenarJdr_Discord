@@ -151,8 +151,7 @@ def ecriture_com( com_etat, com_parler, com_maj_pj, com_maj_conf):
     
 
 def lecture_dico(nom_dico):
-    dico = nom_dico
-    return dico
+    return nom_dico
  
  
 
@@ -280,7 +279,7 @@ async def on_message(message):
 
     if message.author == client.user:
         return   # pour ne pas se répondre à soi-même
-    
+
     if message.content.startswith('$jetequit'):
         arret_interne = True
     elif message.content.startswith('$give'):
@@ -311,7 +310,7 @@ async def on_message(message):
         - $pj pour voir la liste des pj
         - $give pj1 recevoir un pj
         ''')
-        
+
     elif message.content.startswith('$n'):
         
 
@@ -341,12 +340,12 @@ async def on_message(message):
 
             nb , texte = nbmise(liste_de, difficulte)
             recupnom = affectation.get(str(message.author)[0:-5])
-            if recupnom == None:
+            if recupnom is None:
                 recupnom = str(message.author)[0:-5]
-                
+
             resultat = recupnom + ', vous avez ' + str(nb) + \
                 ' mise(s), ( | '+texte+')'
-            
+
             await message.channel.send(resultat)
 
         else:
@@ -356,7 +355,7 @@ async def on_message(message):
         requete = message.content
 
         if requete == '$pj':
-                    
+
             texte_li_pj = 'liste des Pj: \n'
             for key in dico_pj:
                 if key != "system":
@@ -366,7 +365,7 @@ async def on_message(message):
 
         elif len(requete) > 3 :
             num_pj = requete[3:len(requete)]
-            
+
             monmessage = str(dico_pj['pj'+num_pj])
             await message.channel.send(monmessage)
         else:
